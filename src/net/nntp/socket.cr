@@ -3,8 +3,8 @@ require "socket"
 require "openssl"
 
 class Net::NNTP::Socket
-  CRLF = "\x0d\x0a"
-  EOT  = ".#{CRLF}"
+  CRLF     = "\x0d\x0a"
+  EOT      = ".#{CRLF}"
   DOUBLE_P = ".."
   # The address of the NNTP server to connect to.
   getter address : String
@@ -35,7 +35,8 @@ class Net::NNTP::Socket
   end
 
   def open
-    Log.debug { "Opening socket. use_ssl: #{use_ssl}" }
+    Log.info { "socket.open: [address: #{address}, port: #{port} use_ssl: #{use_ssl}]" }
+
     sock = TCPSocket.new(address, port, connect_timeout: open_timeout)
     sock.read_timeout = read_timeout
     sock.blocking = false
@@ -88,7 +89,7 @@ class Net::NNTP::Socket
             response_text_buffer << line[1..-1].chomp
           else
             response_text_buffer << line.chomp
-          else
+          end
         end
       end
     end
@@ -96,9 +97,13 @@ class Net::NNTP::Socket
     response_text_buffer.clear
   end
 
-  def send
+  def send(fmt, *args)
+    cmd = sprintf(fmt, *args)
+    Log.verbose { "socket.send: [#{cmd}]" }
+    socket << cmd
     socket << CRLF
     socket.flush
+    recv_response
   end
 
   # Socket functions

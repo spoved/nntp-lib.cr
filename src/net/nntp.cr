@@ -106,7 +106,7 @@ class Net::NNTP
 
     resp = socket.recv_response
     resp.check!
-    Log.debug { "Received initial response: #{resp.to_json}" }
+    Log.debug { "do_start.init.response: [#{resp.to_json}]" }
 
     start_reader_mode(user, secret, method)
 
@@ -134,7 +134,7 @@ class Net::NNTP
         authenticate(user, secret, method)
         tried_authenticating = true
       rescue ex
-        Log.error(exception: ex) { "Failed to authenticate" }
+        Log.error(exception: ex) { "start_reader_mode: [Failed to authenticate]" }
         raise ex
       end
     end

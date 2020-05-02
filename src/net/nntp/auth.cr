@@ -16,7 +16,7 @@ module Net::NNTP::Auth
     ]
 
     def authenticate(user, secret, method = :original)
-        Log.info { "Authenticating for user: #{user} using method: #{method}" }
+        Log.info { "auth.start: [user: #{user}, method: #{method}]" }
         case method
         {% for m in auth_methods %}
         when :{{m.id}}
