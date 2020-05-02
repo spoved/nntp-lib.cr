@@ -72,7 +72,7 @@ class Net::NNTP::Socket
   def recv_response : Net::NNTP::Response
     stat = self.gets(chomp: true)
     raise NNTP::Error::UnknownError.new("Got nil response") if stat.nil?
-    Net::NNTP::Response.new(stat[0..2], stat[4...-1])
+    Net::NNTP::Response.new(stat[0..2], stat[4..-1])
   end
 
   getter response_text_buffer : Array(String) = Array(String).new(1)

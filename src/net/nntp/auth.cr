@@ -3,7 +3,6 @@ require "base64"
 
 module Net::NNTP::Auth
   abstract def socket : Net::NNTP::Socket
-  abstract def shortcmd(fmt, *args) : Net::NNTP::Response
   abstract def critical(&block)
 
   {% begin %}
@@ -39,8 +38,8 @@ module Net::NNTP::Auth
   # AUTHINFO PASS password
   private def auth_original(user, secret)
     resp = critical {
-      shortcmd("AUTHINFO USER %s", user).check!(true)
-      shortcmd("AUTHINFO PASS %s", secret).check!(true)
+      socket.send("AUTHINFO USER %s", user).check!(true)
+      socket.send("AUTHINFO PASS %s", secret).check!(true)
     }
     raise NNTP::Error::AuthenticationError.new(resp.to_s) unless /\A2../ === resp.status
   end
@@ -49,8 +48,8 @@ module Net::NNTP::Auth
   # username password
   private def auth_simple(user, secret)
     resp = critical {
-      shortcmd("AUTHINFO SIMPLE").check!(true)
-      shortcmd("%s %s", user, secret).check!(true)
+      socket.send("AUTHINFO SIMPLE").check!(true)
+      socket.send("%s %s", user, secret).check!(true)
     }
     raise NNTP::Error::AuthenticationError.new(resp.to_s) unless /\A2../ === resp.status
   end
@@ -62,7 +61,7 @@ module Net::NNTP::Auth
   private def auth_generic(fmt, *args)
     resp = critical {
       cmd = "AUTHINFO GENERIC " + sprintf(fmt, *args)
-      shortcmd(cmd).check!(true)
+      socket.send(cmd).check!(true)
     }
     raise NNTP::Error::AuthenticationError.new(resp.to_s) unless /\A2../ === resp.status
   end
@@ -70,7 +69,7 @@ module Net::NNTP::Auth
   # AUTHINFO SASL PLAIN
   private def auth_plain(user, secret)
     resp = critical {
-      shortcmd("AUTHINFO SASL PLAIN %s",
+      socket.send("AUTHINFO SASL PLAIN %s",
         Base64.encode("\0#{user}\0#{secret}")).check!(true)
     }
     raise NNTP::Error::AuthenticationError.new(resp.to_s) unless /\A2../ === resp.status

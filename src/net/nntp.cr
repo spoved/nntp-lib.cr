@@ -138,6 +138,8 @@ class Net::NNTP
         raise ex
       end
     end
+
+    authenticate(user, secret, method) unless tried_authenticating
   end
 
   def check_auth_args(user, secret, method)
