@@ -1,9 +1,10 @@
 require "./spec_helper"
 
-describe Nntp::Lib do
+describe Net::NNTP do
   # TODO: Write tests
 
-  it "works" do
-    false.should eq(true)
+  it "can connect" do
+    nntp = Net::NNTP.new(ENV["USENET_HOST"], ENV["USENET_PORT"].to_i)
+    nntp.start(ENV["USENET_USER"], ENV["USENET_PASS"], nil)
   end
 end

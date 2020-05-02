@@ -7,3 +7,12 @@ authors:
 crystal: 0.34.0
 
 license: MIT
+
+dependencies: {}
+
+development_dependencies:
+  dotenv:
+    github: gdotdesign/cr-dotenv
+  ameba:
+    github: veelenga/ameba
+    version: ~> 0.10.0
