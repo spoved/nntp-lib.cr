@@ -8,7 +8,6 @@ describe Net::NNTP::Response do
 
     it "throws error on bad response" do
       resp = Net::NNTP::Response.new("440", "No posting!")
-
       expect_raises(Net::NNTP::Error::PostingNotAllowed) do
         resp.check!.should be resp
       end

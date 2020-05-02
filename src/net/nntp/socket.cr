@@ -5,7 +5,7 @@ require "openssl"
 class Net::NNTP::Socket
   CRLF = "\x0d\x0a"
   EOT  = ".#{CRLF}"
-
+  DOUBLE_P = ".."
   # The address of the NNTP server to connect to.
   getter address : String
 
@@ -71,7 +71,6 @@ class Net::NNTP::Socket
   def recv_response : Net::NNTP::Response
     stat = self.gets(chomp: true)
     raise NNTP::Error::UnknownError.new("Got nil response") if stat.nil?
-
     Net::NNTP::Response.new(stat[0..2], stat[4...-1])
   end
 
@@ -84,7 +83,13 @@ class Net::NNTP::Socket
       line = self.gets(chomp: false)
       unless line.nil?
         eot = (line == EOT)
-        response_text_buffer << line.chomp unless eot
+        unless eot
+          if line[0...2] == DOUBLE_P
+            response_text_buffer << line[1..-1].chomp
+          else
+            response_text_buffer << line.chomp
+          else
+        end
       end
     end
     resp.text.concat response_text_buffer
