@@ -16,14 +16,14 @@ module Net::NNTP::Auth
     ]
 
     def authenticate(user, secret, method = :original)
-        Net::NNTP::Log.info { "Authenticating for user: #{user} using method: #{method}" }
+        Log.info { "Authenticating for user: #{user} using method: #{method}" }
         case method
         {% for m in auth_methods %}
         when :{{m.id}}
           auth_{{m.id}}(user, secret)
         {% end %}
         else
-          Net::NNTP::Log.error { "Unsupported auth method: #{method}" }
+          Log.error { "Unsupported auth method: #{method}" }
           raise NNTP::Error::AuthenticationError.new "Unsupported auth method: #{method}"
         end
     end

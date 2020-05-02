@@ -19,7 +19,7 @@ module Net::NNTP::Commands
   def critical(&block)
     return Net::NNTP::Response.new("200", "dummy reply code") if error_occured
     begin
-      return yield
+      yield
     rescue ex
       @error_occured = true
       raise ex
