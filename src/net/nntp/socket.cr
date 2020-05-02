@@ -97,9 +97,9 @@ class Net::NNTP::Socket
     response_text_buffer.clear
   end
 
-  def send(fmt, *args)
+  def send(fmt, *args, quiet = false)
     cmd = sprintf(fmt, *args)
-    Log.verbose { "socket.send: [#{cmd}]" }
+    Log.debug { "socket.send: [#{quiet ? fmt : cmd}]" }
     socket << cmd
     socket << CRLF
     socket.flush

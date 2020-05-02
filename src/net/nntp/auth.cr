@@ -39,7 +39,7 @@ module Net::NNTP::Auth
   private def auth_original(user, secret)
     resp = critical {
       socket.send("AUTHINFO USER %s", user).check!(true)
-      socket.send("AUTHINFO PASS %s", secret).check!(true)
+      socket.send("AUTHINFO PASS %s", secret, quiet: true).check!(true)
     }
     raise NNTP::Error::AuthenticationError.new(resp.to_s) unless /\A2../ === resp.status
   end
@@ -49,7 +49,7 @@ module Net::NNTP::Auth
   private def auth_simple(user, secret)
     resp = critical {
       socket.send("AUTHINFO SIMPLE").check!(true)
-      socket.send("%s %s", user, secret).check!(true)
+      socket.send("%s %s", user, secret, quiet: true).check!(true)
     }
     raise NNTP::Error::AuthenticationError.new(resp.to_s) unless /\A2../ === resp.status
   end
@@ -61,7 +61,7 @@ module Net::NNTP::Auth
   private def auth_generic(fmt, *args)
     resp = critical {
       cmd = "AUTHINFO GENERIC " + sprintf(fmt, *args)
-      socket.send(cmd).check!(true)
+      socket.send(cmd, quiet: true).check!(true)
     }
     raise NNTP::Error::AuthenticationError.new(resp.to_s) unless /\A2../ === resp.status
   end
@@ -70,7 +70,7 @@ module Net::NNTP::Auth
   private def auth_plain(user, secret)
     resp = critical {
       socket.send("AUTHINFO SASL PLAIN %s",
-        Base64.encode("\0#{user}\0#{secret}")).check!(true)
+        Base64.encode("\0#{user}\0#{secret}"), quiet: true).check!(true)
     }
     raise NNTP::Error::AuthenticationError.new(resp.to_s) unless /\A2../ === resp.status
   end

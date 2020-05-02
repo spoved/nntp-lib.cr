@@ -84,6 +84,42 @@ class Net::NNTP
   # :generic, :plain, :starttls, :external, :cram_md5, :digest_md5 and, or
   # :gassapi may be used.  See the discussion of NNTP Authentication in the
   # overview notes.
+  #
+  # === Block Usage
+  #
+  # When this methods is called with a block, the newly-started NNTP object
+  # is yielded to the block, and automatically closed after the block call
+  # finishes.  Otherwise, it is the caller's  responsibility to close the
+  # session when finished.
+  #
+  # === Example
+  #
+  # This is very similar to the class method NNTP.start.
+  #
+  #     require 'net/nntp'
+  #     nntp = Net::NNTP.new('nntp.news.server', 119)
+  #     nntp.start(account, password, method) do |nntp|
+  #       nntp.post msgstr
+  #     end
+  #
+  # The primary use of this method (as opposed to NNTP.start) is probably
+  # to set debugging (#set_debug_output), which must be done before the
+  # session is started.
+  #
+  # === Errors
+  #
+  # If session has already been started, an IO::Error will be raised.
+  #
+  # This method may raise:
+  #
+  # * Net::NNTP::Error::AuthenticationError
+  # * Net::NNTP::Error::FatalError
+  # * Net::NNTP::Error::ServerBusy
+  # * Net::NNTP::Error::SyntaxError
+  # * Net::NNTP::Error::UnknownError
+  # * IO::Error
+  # * IO::TimeoutError
+  #
   def start(user, secret, method)
     _do_start(user, secret, method)
   end
@@ -106,7 +142,7 @@ class Net::NNTP
 
     resp = socket.recv_response
     resp.check!
-    Log.debug { "do_start.init.response: [#{resp.to_json}]" }
+    Log.verbose { "do_start.init.response: [#{resp.to_json}]" }
 
     start_reader_mode(user, secret, method)
 
@@ -121,7 +157,7 @@ class Net::NNTP
     self.socket.close unless self.socket.closed?
   end
 
-  def start_reader_mode(user, secret, method)
+  private def start_reader_mode(user, secret, method)
     mode_reader_success = false
     tried_authenticating = false
     until mode_reader_success
@@ -142,7 +178,7 @@ class Net::NNTP
     authenticate(user, secret, method) unless tried_authenticating
   end
 
-  def check_auth_args(user, secret, method)
+  private def check_auth_args(user, secret, method)
     raise ArgumentError.new("both user and secret are required") if user.nil? || secret.nil?
     # authmeth = "auth_#{method || 'original'}"
     # raise ArgumentError.new( "wrong auth type #{method}")\

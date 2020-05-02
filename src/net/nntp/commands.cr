@@ -4,19 +4,19 @@ module Net::NNTP::Commands
   abstract def socket : Net::NNTP::Socket
 
   def shortcmd(fmt, *args) : Net::NNTP::Response
-    Log.debug { "cmds.shortcmd.fmt: [#{fmt}]" }
+    Log.verbose { "cmds.shortcmd.fmt: [#{fmt}]" }
     resp = critical { socket.send(fmt, *args) }
-    Log.debug { "cmds.shortcmd.response: [#{resp}]" }
+    Log.verbose { "cmds.shortcmd.response: [#{resp}]" }
     resp.check!
   end
 
   def longcmd(fmt, *args)
-    Log.debug { "cmds.longcmd.fmt: [#{fmt}]" }
+    Log.verbose { "cmds.longcmd.fmt: [#{fmt}]" }
     resp = critical { socket.send(fmt, *args) }
     resp.check!
-    Log.debug { "cmds.longcmd.response: [#{resp}]" }
+    Log.verbose { "cmds.longcmd.response: [#{resp}]" }
     socket.recv_response_text(resp)
-    Log.verbose { "cmds.longcmd.full_response: [#{resp}]" }
+    Log.debug { "cmds.longcmd.full_response: [#{resp}]" }
     resp
   end
 
