@@ -31,9 +31,6 @@ require "./nntp/*"
 # FYI: the official documentation on Usenet news extentions is: [RFC2980]
 # (http://www.ietf.org/rfc/rfc2980.txt).
 class Net::NNTP
-  CRLF = "\x0d\x0a"
-  EOT  = ".#{CRLF}"
-
   # The default NNTP port, port 119.
   DEFAULT_PORT = 119
 
@@ -51,9 +48,14 @@ class Net::NNTP
   # The port number of the NNTP server to connect to.
   getter port : Int32
 
-  property started : Bool = false
-  property error_occured : Bool = false
-  property socket : Net::NNTP::Socket
+  private property started : Bool = false
+
+  def started?
+    self.started
+  end
+
+  private property error_occured : Bool = false
+  private property socket : Net::NNTP::Socket
 
   property debug_output : Nil = nil
 
@@ -86,18 +88,37 @@ class Net::NNTP
     _do_start(user, secret, method)
   end
 
-  def _do_start(user, secret, method = :original)
+  def finish
+    _do_finish
+  end
+
+  def start(user, secret, method, &block)
+    _do_start(user, secret, method)
+    yield self
+  ensure
+    finish
+  end
+
+  private def _do_start(user, secret, method = :original)
     raise IO::Error.new("NNTP session already started") if started
     check_auth_args(user, secret, method) if user || secret
     socket.open
 
-    resp = recv_response
-    check_response(resp)
-    Log.debug { "Received initial response: #{resp}" }
+    resp = socket.recv_response
+    resp.check!
+    Log.debug { "Received initial response: #{resp.to_json}" }
 
     start_reader_mode(user, secret, method)
+
+    self.started = true
+  end
+
+  private def _do_finish
+    quit unless self.socket.closed?
   ensure
-    socket.close
+    self.started = false
+    self.error_occured = false
+    self.socket.close unless self.socket.closed?
   end
 
   def start_reader_mode(user, secret, method)
@@ -106,7 +127,7 @@ class Net::NNTP
     until mode_reader_success
       begin
         resp = mode_reader
-        mode_reader_success = /\A201/ === resp
+        mode_reader_success = /\A201/ === resp.status
       rescue ex : NNTP::Error::AuthenticationError
         raise ex if tried_authenticating
         # Try authenticating now
@@ -119,55 +140,10 @@ class Net::NNTP
     end
   end
 
-  def critical(&block)
-    return "200 dummy reply code" if error_occured
-    begin
-      return yield
-    rescue ex
-      @error_occured = true
-      raise ex
-    end
-  end
-
   def check_auth_args(user, secret, method)
     raise ArgumentError.new("both user and secret are required") if user.nil? || secret.nil?
     # authmeth = "auth_#{method || 'original'}"
     # raise ArgumentError.new( "wrong auth type #{method}")\
     #   unless respond_to?(authmeth, true)
-  end
-
-  def recv_response
-    socket.gets(chomp: true)
-  end
-
-  getter response_text_buffer : Array(String) = Array(String).new(1)
-
-  def recv_response_text
-    response_text_buffer.clear
-    eot = false
-    while !eot
-      line = self.socket.gets(chomp: false)
-      unless line.nil?
-        response_text_buffer << line.chomp
-        eot = (line == EOT)
-      end
-    end
-    response_text_buffer.dup
-  end
-
-  def check_response(stat, allow_continue = false)
-    return stat if /\A1/ === stat                      # 1xx info msg
-    return stat if /\A2/ === stat                      # 2xx cmd k
-    return stat if allow_continue && /\A[35]/ === stat # 3xx cmd k, snd rst
-    exception = case stat
-                when /\A440/ then NNTP::Error::PostingNotAllowed # 4xx cmd k, bt nt prfmd
-                when /\A48/  then NNTP::Error::AuthenticationError
-                when /\A4/   then NNTP::Error::ServerBusy
-                when /\A50/  then NNTP::Error::SyntaxError # 5xx cmd ncrrct
-                when /\A55/  then NNTP::Error::FatalError
-                else
-                  NNTP::Error::UnknownError
-                end
-    raise exception.new stat
   end
 end

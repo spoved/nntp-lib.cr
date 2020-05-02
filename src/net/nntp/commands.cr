@@ -2,32 +2,46 @@ require "./errors"
 
 module Net::NNTP::Commands
   abstract def socket : Net::NNTP::Socket
-  abstract def check_response(stat, allow_continue)
-  abstract def critical(&block)
-  abstract def recv_response
-  abstract def recv_response_text
 
-  def shortcmd(fmt, *args)
+  def shortcmd(fmt, *args) : Net::NNTP::Response
     cmd = sprintf(fmt, *args)
-    Log.debug { "Sent short cmd: #{cmd}" }
-    stat = critical {
+    Log.debug { "Sent short command: [#{cmd}]" }
+    resp = critical {
       socket << cmd
-      socket << CRLF
-      socket.flush
-      recv_response
+      socket.send
+      socket.recv_response
     }
-    check_response(stat)
+
+    Log.debug { "Short command response: [#{resp}]" }
+    resp.check!
   end
 
-  def mode_reader
-    stat = shortcmd("MODE READER")
-    Log.debug { "Response: #{stat}" }
-    return stat
-    # return stat[0..2], stat[4..-1].chop
+  def critical(&block)
+    return Net::NNTP::Response.new("200", "dummy reply code") if error_occured
+    begin
+      return yield
+    rescue ex
+      @error_occured = true
+      raise ex
+    end
   end
 
-  def print_help
-    puts shortcmd("HELP")
-    puts recv_response_text.join("\n")
+  def mode_reader : Net::NNTP::Response
+    shortcmd("MODE READER")
+  end
+
+  # QUIT
+  def quit : Net::NNTP::Response
+    shortcmd("QUIT")
+  end
+
+  def help : Net::NNTP::Response
+    resp = shortcmd("HELP")
+    socket.recv_response_text(resp)
+    resp
+  end
+
+  def date : Net::NNTP::Response
+    shortcmd("DATE")
   end
 end

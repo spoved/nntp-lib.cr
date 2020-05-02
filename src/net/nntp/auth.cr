@@ -1,9 +1,9 @@
 require "./errors"
+require "base64"
 
 module Net::NNTP::Auth
   abstract def socket : Net::NNTP::Socket
-  abstract def check_response(stat, allow_continue)
-  abstract def shortcmd(fmt, *args)
+  abstract def shortcmd(fmt, *args) : Net::NNTP::Response
   abstract def critical(&block)
 
   {% begin %}
@@ -16,13 +16,14 @@ module Net::NNTP::Auth
     ]
 
     def authenticate(user, secret, method = :original)
+        Net::NNTP::Log.info { "Authenticating for user: #{user} using method: #{method}" }
         case method
         {% for m in auth_methods %}
         when :{{m.id}}
           auth_{{m.id}}(user, secret)
         {% end %}
         else
-          Log.error { "Unsupported auth method: #{method}" }
+          Net::NNTP::Log.error { "Unsupported auth method: #{method}" }
           raise NNTP::Error::AuthenticationError.new "Unsupported auth method: #{method}"
         end
     end
@@ -34,11 +35,44 @@ module Net::NNTP::Auth
     {% end %}
   {% end %}
 
+  # AUTHINFO USER username
+  # AUTHINFO PASS password
   private def auth_original(user, secret)
-    stat = critical {
-      check_response(shortcmd("AUTHINFO SIMPLE"), true)
-      check_response(shortcmd("%s %s", user, secret), true)
+    resp = critical {
+      shortcmd("AUTHINFO USER %s", user).check!(true)
+      shortcmd("AUTHINFO PASS %s", secret).check!(true)
     }
-    raise NNTP::Error::AuthenticationError.new(stat) unless /\A2../ === stat
+    raise NNTP::Error::AuthenticationError.new(resp.to_s) unless /\A2../ === resp.status
+  end
+
+  # AUTHINFO SIMPLE
+  # username password
+  private def auth_simple(user, secret)
+    resp = critical {
+      shortcmd("AUTHINFO SIMPLE").check!(true)
+      shortcmd("%s %s", user, secret).check!(true)
+    }
+    raise NNTP::Error::AuthenticationError.new(resp.to_s) unless /\A2../ === resp.status
+  end
+
+  # AUTHINFO GENERIC authenticator arguments ...
+  #
+  # The authentication protocols are not inculeded in RFC2980,
+  # see [RFC1731] (http://www.ietf.org/rfc/rfc1731.txt).
+  private def auth_generic(fmt, *args)
+    resp = critical {
+      cmd = "AUTHINFO GENERIC " + sprintf(fmt, *args)
+      shortcmd(cmd).check!(true)
+    }
+    raise NNTP::Error::AuthenticationError.new(resp.to_s) unless /\A2../ === resp.status
+  end
+
+  # AUTHINFO SASL PLAIN
+  private def auth_plain(user, secret)
+    resp = critical {
+      shortcmd("AUTHINFO SASL PLAIN %s",
+        Base64.encode("\0#{user}\0#{secret}")).check!(true)
+    }
+    raise NNTP::Error::AuthenticationError.new(resp.to_s) unless /\A2../ === resp.status
   end
 end

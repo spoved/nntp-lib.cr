@@ -3,6 +3,9 @@ require "socket"
 require "openssl"
 
 class Net::NNTP::Socket
+  CRLF = "\x0d\x0a"
+  EOT  = ".#{CRLF}"
+
   # The address of the NNTP server to connect to.
   getter address : String
 
@@ -23,6 +26,8 @@ class Net::NNTP::Socket
   property ssl_socket : OpenSSL::SSL::Socket::Client? = nil
   property ssl_context : OpenSSL::SSL::Context::Client = OpenSSL::SSL::Context::Client.new
 
+  private property closed = true
+
   def initialize(@address, @port = 119, @use_ssl = true,
                  @open_timeout = 30, @read_timeout = 60,
                  ssl_context : OpenSSL::SSL::Context::Client? = nil)
@@ -39,7 +44,7 @@ class Net::NNTP::Socket
     if use_ssl
       self.ssl_socket = OpenSSL::SSL::Socket::Client.new(sock, ssl_context)
     end
-
+    self.closed = false
     socket
   end
 
@@ -53,10 +58,45 @@ class Net::NNTP::Socket
     end
   end
 
+  def closed?
+    self.closed
+  end
+
   def close
     ssl_socket.not_nil!.close unless ssl_socket.nil?
     tcp_socket.not_nil!.close unless tcp_socket.nil?
+    self.closed = true
   end
+
+  def recv_response : Net::NNTP::Response
+    stat = self.gets(chomp: true)
+    raise NNTP::Error::UnknownError.new("Got nil response") if stat.nil?
+
+    Net::NNTP::Response.new(stat[0..2], stat[4...-1])
+  end
+
+  getter response_text_buffer : Array(String) = Array(String).new(1)
+
+  def recv_response_text(resp)
+    response_text_buffer.clear
+    eot = false
+    while !eot
+      line = self.gets(chomp: false)
+      unless line.nil?
+        eot = (line == EOT)
+        response_text_buffer << line.chomp unless eot
+      end
+    end
+    resp.text.concat response_text_buffer
+    response_text_buffer.clear
+  end
+
+  def send
+    socket << CRLF
+    socket.flush
+  end
+
+  # Socket functions
 
   def gets(**args)
     socket.gets(**args)
