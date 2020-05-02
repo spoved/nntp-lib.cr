@@ -5,6 +5,6 @@ describe Net::NNTP do
 
   it "can connect" do
     nntp = Net::NNTP.new(ENV["USENET_HOST"], ENV["USENET_PORT"].to_i)
-    nntp.start(ENV["USENET_USER"], ENV["USENET_PASS"], nil)
+    nntp.start(ENV["USENET_USER"], ENV["USENET_PASS"], :original)
   end
 end

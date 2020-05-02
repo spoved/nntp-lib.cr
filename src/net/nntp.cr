@@ -1,9 +1,10 @@
-class Net::NNTP; end
-
-require "./errors"
-require "socket"
-require "openssl"
 require "log"
+
+class Net::NNTP
+  Log = ::Log.for(self)
+end
+
+require "./nntp/*"
 
 # = Net::NNTP
 #
@@ -30,11 +31,8 @@ require "log"
 # FYI: the official documentation on Usenet news extentions is: [RFC2980]
 # (http://www.ietf.org/rfc/rfc2980.txt).
 class Net::NNTP
-  Log  = ::Log.for(self)
   CRLF = "\x0d\x0a"
   EOT  = ".#{CRLF}"
-
-  AUTH_METHODS = %w(original simple generic plain starttls external cram_md5 digest_md5 gassapi)
 
   # The default NNTP port, port 119.
   DEFAULT_PORT = 119
@@ -44,44 +42,20 @@ class Net::NNTP
     DEFAULT_PORT
   end
 
+  include Net::NNTP::Commands
+  include Net::NNTP::Auth
+
   # The address of the NNTP server to connect to.
   getter address : String
 
   # The port number of the NNTP server to connect to.
   getter port : Int32
 
-  # Seconds to wait while attempting to open a connection. If the
-  # connection cannot be opened within this time, a TimeoutError is raised.
-  property open_timeout : Int32 = 30
+  property started : Bool = false
+  property error_occured : Bool = false
+  property socket : Net::NNTP::Socket
 
-  # Seconds to wait while reading one block (by one read(2) call). If the
-  # read(2) call does not complete within this time, a TimeoutError is
-  # raised.
-  getter read_timeout : Int32 = 20
-
-  property use_ssl : Bool = false
-  property ssl_context : OpenSSL::SSL::Context::Client = OpenSSL::SSL::Context::Client.new
-  # :nodoc:
-  private property started : Bool = false
-  # :nodoc:
-  private property error_occured : Bool = false
-  # :nodoc:
-  private property tcp_socket : TCPSocket? = nil
-  # :nodoc:
-  private property ssl_socket : OpenSSL::SSL::Socket::Client? = nil
-
-  private def socket : TCPSocket | OpenSSL::SSL::Socket::Client
-    if (use_ssl)
-      raise "NNTP Socket is not open!" if @ssl_socket.nil?
-      @ssl_socket.as(OpenSSL::SSL::Socket::Client)
-    else
-      raise "NNTP Socket is not open!" if @tcp_socket.nil?
-      @tcp_socket.as(TCPSocket)
-    end
-  end
-
-  # :nodoc:
-  private property debug_output : Nil = nil
+  property debug_output : Nil = nil
 
   # Creates a new Net::NNTP object.
   #
@@ -95,6 +69,7 @@ class Net::NNTP
   #
   def initialize(@address, port : Int32? = nil, @use_ssl = true)
     @port = port.nil? ? NNTP.default_port : port
+    @socket = Net::NNTP::Socket.new(address, port)
   end
 
   # Opens a TCP connection and starts the NNTP session.
@@ -111,23 +86,10 @@ class Net::NNTP
     _do_start(user, secret, method)
   end
 
-  private def open_socket
-    Log.debug { "Opening socket. use_ssl: #{use_ssl}" }
-    sock = TCPSocket.new(self.address, self.port, connect_timeout: open_timeout)
-    sock.read_timeout = read_timeout
-    sock.blocking = false
-
-    self.tcp_socket = sock
-    if use_ssl
-      self.ssl_socket = OpenSSL::SSL::Socket::Client.new(sock, ssl_context)
-    end
-  end
-
-  # :nodoc:
-  private def _do_start(user, secret, method = :original)
+  def _do_start(user, secret, method = :original)
     raise IO::Error.new("NNTP session already started") if started
     check_auth_args(user, secret, method) if user || secret
-    open_socket
+    socket.open
 
     resp = recv_response
     check_response(resp)
@@ -143,20 +105,18 @@ class Net::NNTP
     tried_authenticating = false
     until mode_reader_success
       begin
-        mode_reader
-      rescue ex : Net::NNTP::AuthenticationError
+        resp = mode_reader
+        mode_reader_success = /\A201/ === resp
+      rescue ex : NNTP::Error::AuthenticationError
         raise ex if tried_authenticating
         # Try authenticating now
         authenticate(user, secret, method)
         tried_authenticating = true
       rescue ex
-        Log.error ex
+        Log.error(exception: ex) { "Failed to authenticate" }
         raise ex
       end
     end
-  end
-
-  def authenticate(user, secret, method)
   end
 
   def critical(&block)
@@ -169,39 +129,20 @@ class Net::NNTP
     end
   end
 
-  def shortcmd(fmt, *args)
-    cmd = sprintf(fmt, *args)
-    Log.debug { "Sent short cmd: #{cmd}" }
-    stat = critical {
-      socket <<
-        socket << CRLF
-      socket.flush
-      recv_response
-    }
-    check_response(stat)
-  end
-
-  private def mode_reader
-    stat = shortcmd("MODE READER")
-    return stat
-    # return stat[0..2], stat[4..-1].chop
-  end
-
-  # :nodoc:
-  private def check_auth_args(user, secret, method)
+  def check_auth_args(user, secret, method)
     raise ArgumentError.new("both user and secret are required") if user.nil? || secret.nil?
     # authmeth = "auth_#{method || 'original'}"
     # raise ArgumentError.new( "wrong auth type #{method}")\
     #   unless respond_to?(authmeth, true)
   end
 
-  private getter response_text_buffer : Array(String) = Array(String).new(1)
-
-  private def recv_response
+  def recv_response
     socket.gets(chomp: true)
   end
 
-  private def recv_response_text
+  getter response_text_buffer : Array(String) = Array(String).new(1)
+
+  def recv_response_text
     response_text_buffer.clear
     eot = false
     while !eot
@@ -211,41 +152,21 @@ class Net::NNTP
         eot = (line == EOT)
       end
     end
-    response_buffer.dup
+    response_text_buffer.dup
   end
 
-  # private def recv_response
-  #   response_buffer.clear
-  #   sot = eot = false
-  #   count = 0
-  #   while true
-  #     count += 1 if sot
-  #     line = self.socket.gets(chomp: true)
-  #     unless line.nil?
-  #       response_buffer << line
-  #       sot = (/\A[1-5]\d\d/ === line)
-  #       eot = (line == EOT)
-  #     end
-  #     Log.debug { "Response buff: #{response_buffer.size}, sot: #{sot}, eot: #{eot}, count: #{count}" }
-  #     Log.info { "last line: #{response_buffer.last}" }
-  #     break if count > 50
-  #     break if eot
-  #   end
-  #   response_buffer
-  # end
-
-  private def check_response(stat, allow_continue = false)
+  def check_response(stat, allow_continue = false)
     return stat if /\A1/ === stat                      # 1xx info msg
     return stat if /\A2/ === stat                      # 2xx cmd k
     return stat if allow_continue && /\A[35]/ === stat # 3xx cmd k, snd rst
     exception = case stat
-                when /\A440/ then NNTP::PostingNotAllowed # 4xx cmd k, bt nt prfmd
-                when /\A48/  then NNTP::AuthenticationError
-                when /\A4/   then NNTP::ServerBusy
-                when /\A50/  then NNTP::SyntaxError # 5xx cmd ncrrct
-                when /\A55/  then NNTP::FatalError
+                when /\A440/ then NNTP::Error::PostingNotAllowed # 4xx cmd k, bt nt prfmd
+                when /\A48/  then NNTP::Error::AuthenticationError
+                when /\A4/   then NNTP::Error::ServerBusy
+                when /\A50/  then NNTP::Error::SyntaxError # 5xx cmd ncrrct
+                when /\A55/  then NNTP::Error::FatalError
                 else
-                  NNTP::UnknownError
+                  NNTP::Error::UnknownError
                 end
     raise exception.new stat
   end
