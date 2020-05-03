@@ -2,8 +2,8 @@ require "../errors"
 require "base64"
 
 module Net::NNTP::Commands::Auth
-  abstract def socket : Net::NNTP::Socket
-  abstract def critical(&block)
+  protected abstract def socket : Net::NNTP::Socket
+  protected abstract def critical(&block)
 
   {% begin %}
     {% auth_methods = %w(original simple generic plain starttls external cram_md5 digest_md5 gassapi) %}
@@ -34,12 +34,14 @@ module Net::NNTP::Commands::Auth
     {% end %}
   {% end %}
 
-  # [RFC2980]
-  # 3.1.1 Original AUTHINFO
+  # [RFC2980](https://www.ietf.org/rfc/rfc2980.txt)
+  # `3.1.1 Original AUTHINFO`
   #
+  # ### 3.1.1 Original AUTHINFO
+  # ```text
   #    AUTHINFO USER username
   #    AUTHINFO PASS password
-  #
+  # ```
   #    The original AUTHINFO is used to identify a specific entity to the
   #    server using a simple username/password combination.  It first
   #    appeared in the UNIX reference implementation.
@@ -83,13 +85,14 @@ module Net::NNTP::Commands::Auth
   #    statistics generation can associate newsgroup references with unique
   #    entities - not necessarily by name.
   #
-  # 3.1.1.1 Responses
-  #
+  # ### 3.1.1.1 Responses
+  # ```text
   #       281 Authentication accepted
   #       381 More authentication information required
   #       480 Authentication required
   #       482 Authentication rejected
   #       502 No permission
+  # ```
   private def auth_original(user, secret)
     resp = critical {
       socket.send("AUTHINFO USER %s", user).check!(true)
@@ -98,12 +101,14 @@ module Net::NNTP::Commands::Auth
     raise NNTP::Error::AuthenticationError.new(resp.to_s) unless /\A2../ === resp.status
   end
 
-  # [RFC2980]
-  # 3.1.2 AUTHINFO SIMPLE
+  # [RFC2980](https://www.ietf.org/rfc/rfc2980.txt)
+  # `3.1.2 AUTHINFO SIMPLE`
   #
+  # ### 3.1.2 AUTHINFO SIMPLE
+  # ```text
   #    AUTHINFO SIMPLE
   #    user password
-  #
+  # ```
   #    This version of AUTHINFO was part of a proposed NNTP V2
   #    specification, which was started in 1991 but never completed, and is
   #    implemented in some servers and clients.  It is a refinement of the
@@ -125,12 +130,13 @@ module Net::NNTP::Commands::Auth
   #    V2 specification and are violations of RFC 977.  It is recommended
   #    that this command not be implemented, but use either or both of the
   #    other forms of AUTHINFO if such functionality if required.
-  # 3.1.2.1 Responses
-  #
+  # ### 3.1.2.1 Responses
+  # ```text
   #       250 Authorization accepted
   #       350 Continue with authorization sequence
   #       450 Authorization required for this command
   #       452 Authorization rejected
+  # ```
   private def auth_simple(user, secret)
     resp = critical {
       socket.send("AUTHINFO SIMPLE").check!(true)
@@ -139,11 +145,13 @@ module Net::NNTP::Commands::Auth
     raise NNTP::Error::AuthenticationError.new(resp.to_s) unless /\A2../ === resp.status
   end
 
-  # [RFC2980]
-  # 3.1.3 AUTHINFO GENERIC
+  # [RFC2980](https://www.ietf.org/rfc/rfc2980.txt)
+  # `3.1.3 AUTHINFO GENERIC`
   #
+  # ### 3.1.3 AUTHINFO GENERIC
+  # ```text
   #    AUTHINFO GENERIC authenticator arguments...
-  #
+  # ```
   #    AUTHINFO GENERIC is used to identify a specific entity to the server
   #    using arbitrary authentication  or identification protocols.  The
   #    desired protocol is indicated by the authenticator parameter, and any
@@ -202,7 +210,7 @@ module Net::NNTP::Commands::Auth
   #    supported mechanisms followed by a period on a line by itself.
   #
   # 3.1.3.1 Responses
-  #
+  # ```text
   #       281 Authentication succeeded
   #       480 Authentication required
   #       500 Command not understood
@@ -210,9 +218,9 @@ module Net::NNTP::Commands::Auth
   #       502 No permission
   #       503 Program error, function not performed
   #       nnn  authenticator-specific protocol.
-  #
+  # ```
   # The authentication protocols are not inculeded in RFC2980,
-  # see [RFC1731] (http://www.ietf.org/rfc/rfc1731.txt).
+  # see [RFC1731](http://www.ietf.org/rfc/rfc1731.txt).
   private def auth_generic(fmt, *args)
     resp = critical {
       cmd = "AUTHINFO GENERIC " + sprintf(fmt, *args)
@@ -221,8 +229,10 @@ module Net::NNTP::Commands::Auth
     raise NNTP::Error::AuthenticationError.new(resp.to_s) unless /\A2../ === resp.status
   end
 
-  # [RFC2980]
+  # [RFC2980](https://www.ietf.org/rfc/rfc2980.txt)
+  # ```text
   # AUTHINFO SASL PLAIN
+  # ```
   private def auth_plain(user, secret)
     resp = critical {
       socket.send("AUTHINFO SASL PLAIN %s",

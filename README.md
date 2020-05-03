@@ -2,9 +2,8 @@
 
 This is a pure Crystal source (single file, fully documented) code, provides
 a minimum requisite functions for NNTP (Network News Transfer Protocol)
-clients, per [RFC977] (http://www.ietf.org/rfc/rfc977.txt), extensions
-[RFC2980] (http://www.ietf.org/rfc/rfc2980.txt) and authentication [DRAFT]
-(http://www.ietf.org/internet-drafts/draft-ietf-nntpext-authinfo-07.txt).
+clients, per [RFC977](http://www.ietf.org/rfc/rfc977.txt), extensions
+[RFC2980](http://www.ietf.org/rfc/rfc2980.txt) and authentication [DRAFT](http://www.ietf.org/internet-drafts/draft-ietf-nntpext-authinfo-07.txt).
 
 ## Installation
 
@@ -49,7 +48,7 @@ nntp.finish
 * [RFC977](https://www.ietf.org/rfc/rfc977.txt)
   * 3.4.  The IHAVE command
   * 3.10.  The POST command
-* [RFC850](https://www.ietf.org/rfc/rfc2980.txt)
+* [RFC2980](https://www.ietf.org/rfc/rfc2980.txt)
   * 1.3.1  The TAKETHIS command
   * 1.4.1  The XREPLIC command
   * 2.1.1 Extensions to the LIST command

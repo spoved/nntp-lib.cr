@@ -1,16 +1,16 @@
 require "./errors"
 
 module Net::NNTP::Commands
-  abstract def socket : Net::NNTP::Socket
+  protected abstract def socket : Net::NNTP::Socket
 
-  def shortcmd(fmt, *args) : Net::NNTP::Response
+  protected def shortcmd(fmt, *args) : Net::NNTP::Response
     Log.verbose { "cmds.shortcmd.fmt: [#{fmt}]" }
     resp = critical { socket.send(fmt, *args) }
     Log.verbose { "cmds.shortcmd.response: [#{resp}]" }
     resp.check!
   end
 
-  def longcmd(fmt, *args)
+  protected def longcmd(fmt, *args)
     Log.verbose { "cmds.longcmd.fmt: [#{fmt}]" }
     resp = critical { socket.send(fmt, *args) }
     resp.check!
@@ -20,7 +20,7 @@ module Net::NNTP::Commands
     resp
   end
 
-  def critical(&block)
+  protected def critical(&block)
     return Net::NNTP::Response.new("200", "dummy reply code") if error_occured
     begin
       yield
@@ -30,11 +30,13 @@ module Net::NNTP::Commands
     end
   end
 
-  # [RFC977]
-  # 3.1.1.  ARTICLE (selection by message-id)
+  # [RFC977](https://www.ietf.org/rfc/rfc977.txt)
+  # `3.1.1 ARTICLE (selection by message-id)`
   #
+  # ### 3.1.1 ARTICLE
+  # ```text
   #    ARTICLE <message-id>
-  #
+  # ```
   #    Display the header, a blank line, then the body (text) of the
   #    specified article.  Message-id is the message id of an article as
   #    shown in that article's header.  It is anticipated that the client
@@ -49,8 +51,8 @@ module Net::NNTP::Commands
   #    the proper sequence and membership of an article which may have been
   #    posted to more than one newsgroup.
   #
-  # 3.1.3.  Responses
-  #
+  # ### 3.1.3 Responses
+  # ```text
   #    220 n <a> article retrieved - head and body follow
   #            (n = article number, <a> = message-id)
   #    221 n <a> article retrieved - head follows
@@ -60,8 +62,8 @@ module Net::NNTP::Commands
   #    420 no current article has been selected
   #    423 no such article number in this group
   #    430 no such article found
-  #
-  # @example
+  # ```
+  # ### Example
   # ```
   # nntp.group "alt.binaries.cbt"
   # nntp.article("nkdtopWMXkIqWnuDoljqJRJUPKQsWQMk@news.usenet.farm")
@@ -100,11 +102,13 @@ module Net::NNTP::Commands
     longcmd("ARTICLE <%s>", message_id)
   end
 
-  # [RFC977]
-  # 3.1.2.  ARTICLE (selection by number)
+  # [RFC977](https://www.ietf.org/rfc/rfc977.txt)
+  # `3.1.2 ARTICLE (selection by number)`
   #
+  # ### 3.1.2 ARTICLE
+  # ```text
   #  ARTICLE [nnn]
-  #
+  # ```
   #  Displays the header, a blank line, then the body (text) of the
   #  current or specified article.  The optional parameter nnn is the
   #
@@ -130,8 +134,8 @@ module Net::NNTP::Commands
   #  used by a news reading program to skip duplicate displays of articles
   #  that have been posted more than once, or to more than one newsgroup.
   #
-  # 3.1.3.  Responses
-  #
+  # ### 3.1.3 Responses
+  # ```text
   #    220 n <a> article retrieved - head and body follow
   #            (n = article number, <a> = message-id)
   #    221 n <a> article retrieved - head follows
@@ -141,8 +145,8 @@ module Net::NNTP::Commands
   #    420 no current article has been selected
   #    423 no such article number in this group
   #    430 no such article found
-  #
-  # @example
+  # ```
+  # ### Example
   # ```
   # nntp.group "alt.binaries.cbt"
   # nntp.article(56910052)
@@ -185,13 +189,17 @@ module Net::NNTP::Commands
     end
   end
 
-  # [RFC977]
+  # [RFC977](https://www.ietf.org/rfc/rfc977.txt)
+  # `3.1.3 HEAD`
+  #
+  # ### 3.1.3 HEAD
+  #
   # The HEAD and BODY commands are identical to the ARTICLE command
   # except that they respectively return only the header lines or text
   # body of the article.
   #
-  # 3.1.3.  Responses
-  #
+  # ### 3.1.3 Responses
+  # ```text
   #    220 n <a> article retrieved - head and body follow
   #            (n = article number, <a> = message-id)
   #    221 n <a> article retrieved - head follows
@@ -201,6 +209,7 @@ module Net::NNTP::Commands
   #    420 no current article has been selected
   #    423 no such article number in this group
   #    430 no such article found
+  # ```
   def head(message_id : String)
     longcmd("HEAD <%s>", message_id)
   end
@@ -228,7 +237,11 @@ module Net::NNTP::Commands
     end
   end
 
-  # [RFC977]
+  # [RFC977](https://www.ietf.org/rfc/rfc977.txt)
+  # `3.1.3 STAT`
+  #
+  # ### 3.1.3 STAT
+  #
   # The STAT command is similar to the ARTICLE command except that no
   # text is returned.  When selecting by message number within a group,
   # the STAT command serves to set the current article pointer without
@@ -236,6 +249,7 @@ module Net::NNTP::Commands
   # message-id, which may be of some value.  Using the STAT command to
   # select by message-id is valid but of questionable value, since a
   # selection by message-id does NOT alter the "current article pointer".
+  #
   def stat(message_id : String)
     shortcmd("STAT <%s>", message_id)
   end
@@ -249,11 +263,13 @@ module Net::NNTP::Commands
     end
   end
 
-  # [RFC977]
-  # 3.2.1.  GROUP
+  # [RFC977](https://www.ietf.org/rfc/rfc977.txt)
+  # `3.2.1 GROUP`
   #
+  # ### 3.2.1 GROUP
+  # ```text
   #    GROUP ggg
-  #
+  # ```
   #    The required parameter ggg is the name of the newsgroup to be
   #    selected (e.g. "net.news").  A list of valid newsgroups may be
   #    obtained from the LIST command.
@@ -278,16 +294,16 @@ module Net::NNTP::Commands
   #    otherwise match a newsgroup obtained from the LIST command or an
   #    error will result.
   #
-  # 3.2.2.  Responses
-  #
+  # ### 3.2.2 Responses
+  # ```text
   #    211 n f l s group selected
   #            (n = estimated number of articles in group,
   #            f = first article number in the group,
   #            l = last article number in the group,
   #            s = name of the group.)
   #    411 no such news group
-  #
-  # @example
+  # ```
+  # ### Example
   # ```
   # nntp.group("alt.binaries.cbt") # => { "status": "211", "msg": "56894721 15332 56910052 alt.binaries.cbt", "text": [] }
   # ```
@@ -295,27 +311,32 @@ module Net::NNTP::Commands
     shortcmd("GROUP %s", name)
   end
 
-  # [RFC977]
-  # 3.3.1.  HELP
+  # [RFC977](https://www.ietf.org/rfc/rfc977.txt)
+  # `3.3.1 HELP`
   #
+  # ### 3.3.1 HELP
+  # ```text
   #    HELP
-  #
+  # ```
   #    Provides a short summary of commands that are understood by this
   #    implementation of the server. The help text will be presented as a
   #    textual response, terminated by a single period on a line by itself.
   #
-  #    3.3.2.  Responses
-  #
+  #    ### 3.3.2 Responses
+  # ```text
   #    100 help text follows
+  # ```
   def help : Net::NNTP::Response
     longcmd("HELP")
   end
 
-  # [RFC977]
-  # 3.5.1.  LAST
+  # [RFC977](https://www.ietf.org/rfc/rfc977.txt)
+  # `3.5.1 LAST`
   #
+  # ### 3.5.1 LAST
+  # ```text
   #    LAST
-  #
+  # ```
   #    The internally maintained "current article pointer" is set to the
   #    previous article in the current newsgroup.  If already positioned at
   #    the first article of the newsgroup, an error message is returned and
@@ -328,15 +349,15 @@ module Net::NNTP::Commands
   #    string will be returned.  No text is sent in response to this
   #    command.
   #
-  # 3.5.2.  Responses
-  #
+  # ### 3.5.2 Responses
+  # ```text
   #    223 n a article retrieved - request text separately
   #            (n = article number, a = unique article id)
   #    412 no newsgroup selected
   #    420 no current article has been selected
   #    422 no previous article in this group
-  #
-  # @example
+  # ```
+  # ### Example
   # ```
   # nntp.group "alt.binaries.cbt"
   # nntp.article 56910052
@@ -355,16 +376,18 @@ module Net::NNTP::Commands
     shortcmd("LAST")
   end
 
-  # [RFC977]
-  # 3.6.1.  LIST
+  # [RFC977](https://www.ietf.org/rfc/rfc977.txt)
+  # `3.6.1 LIST`
   #
+  # ### 3.6.1 LIST
+  # ```text
   #    LIST
-  #
+  # ```
   #    Returns a list of valid newsgroups and associated information.  Each
   #    newsgroup is sent as a line of text in the following format:
-  #
+  # ```text
   #       group last first p
-  #
+  # ```
   #    where <group> is the name of the newsgroup, <last> is the number of
   #    the last known article currently in that newsgroup, <first> is the
   #    number of the first article currently in the newsgroup, and <p> is
@@ -389,11 +412,11 @@ module Net::NNTP::Commands
   #    command consists only of the terminating period) is a possible valid
   #    response, and indicates that there are currently no valid newsgroups.
   #
-  # 3.6.2.  Responses
-  #
+  # ### 3.6.2 Responses
+  # ```text
   #    215 list of newsgroups follows
-  #
-  # @example
+  # ```
+  # ### Example
   # ```
   # nntp.list
   # ```
@@ -424,11 +447,13 @@ module Net::NNTP::Commands
     longcmd("LIST")
   end
 
-  # [RFC977]
-  # 3.7.1.  NEWGROUPS
+  # [RFC977](https://www.ietf.org/rfc/rfc977.txt)
+  # `3.7.1 NEWGROUPS`
   #
+  # ### 3.7.1 NEWGROUPS
+  # ```text
   #    NEWGROUPS date time [GMT] [<distributions>]
-  #
+  # ```
   #    A list of newsgroups created since <date and time> will be listed in
   #    the same format as the LIST command.
   #
@@ -457,11 +482,11 @@ module Net::NNTP::Commands
   #    command consists only of the terminating period) is a possible valid
   #    response, and indicates that there are currently no new newsgroups.
   #
-  # 3.7.2.  Responses
-  #
+  # ### 3.7.2 Responses
+  # ```text
   #    231 list of new newsgroups follows
-  #
-  # @example
+  # ```
+  # ### Example
   # ```
   # nntp.new_groups
   # nntp.new_groups("100101", "000000")
@@ -489,11 +514,13 @@ module Net::NNTP::Commands
     longcmd("NEWGROUPS")
   end
 
-  # [RFC977]
-  # 3.8.1.  NEWNEWS
+  # [RFC977](https://www.ietf.org/rfc/rfc977.txt)
+  # `3.8.1 NEWNEWS`
   #
+  # ### 3.8.1 NEWNEWS
+  # ```text
   #    NEWNEWS newsgroups date time [GMT] [<distribution>]
-  #
+  # ```
   #    A list of message-ids of articles posted or received to the specified
   #    newsgroup since "date" will be listed. The format of the listing will
   #    be one message-id per line, as though text were being sent.  A single
@@ -546,11 +573,11 @@ module Net::NNTP::Commands
   #    command consists only of the terminating period) is a possible valid
   #    response, and indicates that there is currently no new news.
   #
-  # 3.8.2.  Responses
-  #
+  # ### 3.8.2 Responses
+  # ```text
   #    230 list of new articles by message-id follows
-  #
-  # @example
+  # ```
+  # ### Example
   # ```
   # nntp.new_news
   # ```
@@ -581,11 +608,13 @@ module Net::NNTP::Commands
     end
   end
 
-  # [RFC977]
-  # 3.9.1.  NEXT
+  # [RFC977](https://www.ietf.org/rfc/rfc977.txt)
+  # `3.9.1 NEXT`
   #
+  # ### 3.9.1 NEXT
+  # ```text
   #    NEXT
-  #
+  # ```
   #    The internally maintained "current article pointer" is advanced to
   #    the next article in the current newsgroup.  If no more articles
   #    remain in the current group, an error message is returned and the
@@ -598,15 +627,15 @@ module Net::NNTP::Commands
   #    string will be returned.  No text is sent in response to this
   #    command.
   #
-  # 3.9.2.  Responses
-  #
+  # ### 3.9.2 Responses
+  # ```text
   #    223 n a article retrieved - request text separately
   #            (n = article number, a = unique article id)
   #    412 no newsgroup selected
   #    420 no current article has been selected
   #    421 no next article in this group
-  #
-  # @example
+  # ```
+  # ### Example
   # ```
   # nntp.group "alt.binaries.cbt"
   # nntp.article 56900000
@@ -625,11 +654,13 @@ module Net::NNTP::Commands
     shortcmd("NEXT")
   end
 
-  # [RFC977]
-  # 3.11.1.  QUIT
+  # [RFC977](https://www.ietf.org/rfc/rfc977.txt)
+  # `3.11.1 QUIT`
   #
+  # ### 3.11.1 QUIT
+  # ```text
   #    QUIT
-  #
+  # ```
   #    The server process acknowledges the QUIT command and then closes the
   #    connection to the client.  This is the preferred method for a client
   #    to indicate that it has finished all its transactions with the NNTP
@@ -639,11 +670,11 @@ module Net::NNTP::Commands
   #    other fault occurs), the server should gracefully cease its attempts
   #    to service the client.
   #
-  # 3.11.2.  Responses
-  #
+  # ### 3.11.2 Responses
+  # ```text
   #    205 closing connection - goodbye!
-  #
-  # @example
+  # ```
+  # ### Example
   # ```
   # nntp.quit
   # ```
@@ -660,11 +691,13 @@ module Net::NNTP::Commands
     shortcmd("QUIT")
   end
 
-  # [RFC977]
-  # 3.12.1.  SLAVE
+  # [RFC977](https://www.ietf.org/rfc/rfc977.txt)
+  # `3.12.1 SLAVE`
   #
+  # ### 3.12.1 SLAVE
+  # ```text
   #    SLAVE
-  #
+  # ```
   #    Indicates to the server that this client connection is to a slave
   #    server, rather than a user.
   #
@@ -679,11 +712,11 @@ module Net::NNTP::Commands
   #    NNTP servers which do not give priority to slave servers, this
   #    command must nonetheless be recognized and acknowledged.
   #
-  # 3.12.2.  Responses
-  #
+  # ### 3.12.2 Responses
+  # ```text
   #    202 slave status noted
-  #
-  # @example
+  # ```
+  # ### Example
   # ```
   # nntp.quit
   # ```

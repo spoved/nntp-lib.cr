@@ -1,13 +1,15 @@
-# This module contains command extensions such as described in [RFC2980](https://www.ietf.org/rfc/rfc2980.txt)
+# This module contains command extensions such as described in [RFC2980](https://www.ietf.org/rfc/rfc2980.txt)(https://www.ietf.org/rfc/rfc2980.txt)
 module Net::NNTP::Commands::Extensions
-  abstract def shortcmd(fmt, *args) : Net::NNTP::Response
-  abstract def longcmd(fmt, *args) : Net::NNTP::Response
+  protected abstract def shortcmd(fmt, *args) : Net::NNTP::Response
+  protected abstract def longcmd(fmt, *args) : Net::NNTP::Response
 
-  # [RFC2980]
-  # 1.2.1  The MODE STREAM command
+  # [RFC2980](https://www.ietf.org/rfc/rfc2980.txt)
+  # `1.2.1 MODE STREAM`
   #
+  # ### 1.2.1 MODE STREAM
+  # ```text
   #    MODE STREAM
-  #
+  # ```
   #    MODE STREAM is used by a peer to indicate to the server that it would
   #    like to suspend the lock step conversational nature of NNTP and send
   #    commands in streams.  This command should be used before TAKETHIS and
@@ -15,11 +17,11 @@ module Net::NNTP::Commands::Extensions
   #    details.
   #
   # 1.2.2.  Responses
-  #
+  # ```text
   #       203 Streaming is OK
   #       500 Command not understood
-  #
-  # @example
+  # ```
+  # ### Example
   # ```
   # nntp.quit
   # ```
@@ -36,8 +38,10 @@ module Net::NNTP::Commands::Extensions
     shortcmd("MODE STREAM")
   end
 
-  # [RFC2980]
-  # 2.3 MODE READER
+  # [RFC2980](https://www.ietf.org/rfc/rfc2980.txt)
+  # `2.3 MODE READER`
+  #
+  # ### 2.3 MODE READER
   #
   #    MODE READER is used by the client to indicate to the server that it
   #    is a news reading client.  Some implementations make use of this
@@ -46,12 +50,12 @@ module Net::NNTP::Commands::Extensions
   #    with the SLAVE command in RFC 977, which was not widely implemented.
   #    MODE READER was first available in INN.
   #
-  # 2.3.1 Responses
-  #
+  # ### 2.3.1 Responses
+  # ```text
   #       200 Hello, you can post
   #       201 Hello, you can't post
-  #
-  # @example
+  # ```
+  # ### Example
   # ```
   # nntp.mode_reader
   # ```
@@ -68,11 +72,13 @@ module Net::NNTP::Commands::Extensions
     shortcmd("MODE READER")
   end
 
-  # [RFC2980]
-  # 2.6 XHDR
+  # [RFC2980](https://www.ietf.org/rfc/rfc2980.txt)
+  # `2.6 XHDR`
   #
+  # ### 2.6 XHDR
+  # ```text
   #    XHDR header [range|<message-id>]
-  #
+  # ```
   #    The XHDR command is used to retrieve specific headers from specific
   #    articles.
   #
@@ -112,15 +118,15 @@ module Net::NNTP::Commands::Extensions
   #    implementation from its first release.  However, until now, it has
   #    been documented only in the source for the server.
   #
-  # 2.6.1 Responses
-  #
+  # ### 2.6.1 Responses
+  # ```text
   #       221 Header follows
   #       412 No news group current selected
   #       420 No current article selected
   #       430 no such article
   #       502 no permission
-  #
-  # @example
+  # ```
+  # ### Example
   # ```
   # nntp.xdhr("subject", "XrXwSfUuLnTgGkPwFjUhPsDe-1587103045909@nyuu")
   # ```
@@ -139,8 +145,12 @@ module Net::NNTP::Commands::Extensions
     longcmd("XHDR %s", header, message_id)
   end
 
-  # [RFC2980]
-  # @example
+  # [RFC2980](https://www.ietf.org/rfc/rfc2980.txt)
+  # `2.6 XHDR`
+  #
+  # ### 2.6 XHDR
+  #  See `xdhr(header, message_id : String)`
+  # ### Example
   # ```
   # nntp.xdhr("subject", 56900000)
   # nntp.xdhr("subject", 56900000, all: true)
@@ -177,24 +187,26 @@ module Net::NNTP::Commands::Extensions
     end
   end
 
-  # [RFC2980]
-  # 2.8 XOVER
+  # [RFC2980](https://www.ietf.org/rfc/rfc2980.txt)
+  # `2.8 XOVER`
   #
+  # ### 2.8 XOVER
+  # ```text
   #    XOVER [range]
-  #
+  # ```
   #    The XOVER command returns information from the overview database for
   #    the article(s) specified.  This command was originally suggested as
   #    part of the OVERVIEW work described in "The Design of a Common
   #    Newsgroup Overview Database for Newsreaders" by Geoff Collyer.  This
   #    document is distributed in the Cnews distribution.  The optional
   #    range argument may be any of the following:
-  #
+  # ```text
   #                an article number
   #                an article number followed by a dash to indicate
   #                   all following
   #                an article number followed by a dash followed by
   #                   another article number
-  #
+  # ```
   #    If no argument is specified, then information from the current
   #    article is displayed.  Successful responses start with a 224 response
   #    followed by the overview information for all matched messages.  Once
@@ -228,14 +240,14 @@ module Net::NNTP::Commands::Extensions
   #    Note that any tab and end-of-line characters in any header data that
   #    is returned will be converted to a space character.
   #
-  # 2.8.1 Responses
-  #
+  # ### 2.8.1 Responses
+  # ```text
   #       224 Overview information follows
   #       412 No news group current selected
   #       420 No article(s) selected
   #       502 no permission
-  #
-  # @example
+  # ```
+  # ### Example
   # ```
   # nntp.xover(56900000)
   # nntp.xover(56900000, all: true)
@@ -272,11 +284,13 @@ module Net::NNTP::Commands::Extensions
     end
   end
 
-  # [RFC2980]
-  # 3.2 DATE
+  # [RFC2980](https://www.ietf.org/rfc/rfc2980.txt)
+  # `3.2 DATE`
   #
+  # ### 3.2 DATE
+  # ```text
   #    DATE
-  #
+  # ```
   #    The first NNTP working group discussed and proposed a syntax for this
   #    command to help clients find out the current time from the server's
   #    perspective.  At the time this command was discussed (1991-1992), the
@@ -287,24 +301,11 @@ module Net::NNTP::Commands::Extensions
   #    This command returns a one-line response code of 111 followed by the
   #    GMT date and time on the server in the form YYYYMMDDhhmmss.
   #
-  # 3.2.1 Responses
-  #
+  # ### 3.2.1 Responses
+  # ```text
   #       111 YYYYMMDDhhmmss
+  # ```
   def date : Net::NNTP::Response
     shortcmd("DATE")
   end
-
-  # "  xfeature compress gzip [terminator]",
-  # "  xzver [range]",
-  # "  xzhdr field [range]",
-
-  # LIST [ACTIVE|NEWSGROUPS] [<Wildmat>]]:br:
-  # LIST [ACTIVE.TIMES|EXTENSIONS|SUBSCRIPTIONS|OVERVIEW.FMT]
-  # LISTGROUP <Newsgroup>
-
-  # OVER <Range>  # e.g first[-[last]]
-
-  # XHDR <Header> <Message-ID>|<Range>  # e.g first[-[last]]
-  # XOVER <Range>  # e.g first[-[last]]
-
 end
