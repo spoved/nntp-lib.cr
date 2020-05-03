@@ -11,10 +11,4 @@ describe Net::NNTP do
       resp.text.should_not be_empty
     end
   end
-
-  it "can fetch date" do
-    with_client do |client|
-      puts client.date.to_json
-    end
-  end
 end
