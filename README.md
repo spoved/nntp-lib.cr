@@ -37,15 +37,16 @@ TODO: Write development instructions here
   * 2.1.1 Extensions to the LIST command
   * 2.2 LISTGROUP
   * 2.4 XGTITLE
-  * 2.6 XHDR
   * 2.7 XINDEX
-  * 2.8 XOVER
   * 2.9 XPAT
   * 2.10 The XPATH command
   * 2.11 The XROVER command
   * 2.12 XTHREAD
   * 3.3 The WILDMAT format
-
+* Misc commands
+  * xfeature compress gzip [terminator]
+  * xzver [range]
+  * xzhdr field [range]
 
 ## Contributing
 

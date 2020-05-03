@@ -700,3 +700,5 @@ module Net::NNTP::Commands
     shortcmd("SLAVE")
   end
 end
+
+require "./commands/*"

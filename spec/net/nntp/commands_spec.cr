@@ -45,12 +45,6 @@ describe Net::NNTP::Commands do
       resp.msg.should match(/(\d+\s){3}#{newsgroup}/)
     end
 
-    it "#date" do
-      resp = with_client &.date
-      resp.status.should eq "111"
-      resp.msg.should match(/\d{14}/)
-    end
-
     it "#article" do
       with_client do |client|
         gresp = client.group(newsgroup)

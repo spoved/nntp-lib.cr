@@ -5,7 +5,6 @@ class Net::NNTP
 end
 
 require "./nntp/*"
-require "./nntp/commands/extensions"
 
 # = Net::NNTP
 #
@@ -42,7 +41,7 @@ class Net::NNTP
 
   include Net::NNTP::Commands
   include Net::NNTP::Commands::Extensions
-  include Net::NNTP::Auth
+  include Net::NNTP::Commands::Auth
 
   # The address of the NNTP server to connect to.
   getter address : String
