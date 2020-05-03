@@ -26,6 +26,11 @@ TODO: Write usage instructions here
 
 TODO: Write development instructions here
 
+## Missing Features
+
+* 3.4.  The IHAVE command
+* 3.10.  The POST command
+
 ## Contributing
 
 1. Fork it (<https://github.com/spoved/nntp-lib.cr/fork>)

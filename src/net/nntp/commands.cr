@@ -183,6 +183,68 @@ module Net::NNTP::Commands
     end
   end
 
+  # The HEAD and BODY commands are identical to the ARTICLE command
+  # except that they respectively return only the header lines or text
+  # body of the article.
+  #
+  # 3.1.3.  Responses
+  #
+  #    220 n <a> article retrieved - head and body follow
+  #            (n = article number, <a> = message-id)
+  #    221 n <a> article retrieved - head follows
+  #    222 n <a> article retrieved - body follows
+  #    223 n <a> article retrieved - request text separately
+  #    412 no newsgroup has been selected
+  #    420 no current article has been selected
+  #    423 no such article number in this group
+  #    430 no such article found
+  def head(message_id : String)
+    longcmd("HEAD <%s>", message_id)
+  end
+
+  # :ditto:
+  def head(num : Int64 | Int32 = 0)
+    if num.zero?
+      longcmd("HEAD")
+    else
+      longcmd("HEAD %d", num)
+    end
+  end
+
+  # :ditto:
+  def body(message_id : String)
+    longcmd("BODY <%s>", message_id)
+  end
+
+  # :ditto:
+  def body(num : Int64 | Int32 = 0)
+    if num.zero?
+      longcmd("BODY")
+    else
+      longcmd("BODY %d", num)
+    end
+  end
+
+  # The STAT command is similar to the ARTICLE command except that no
+  # text is returned.  When selecting by message number within a group,
+  # the STAT command serves to set the current article pointer without
+  # sending text. The returned acknowledgement response will contain the
+  # message-id, which may be of some value.  Using the STAT command to
+  # select by message-id is valid but of questionable value, since a
+  # selection by message-id does NOT alter the "current article pointer".
+  def stat(message_id : String)
+    shortcmd("STAT <%s>", message_id)
+  end
+
+  # :ditto:
+  def stat(num : Int64 | Int32 = 0)
+    if num.zero?
+      shortcmd("STAT")
+    else
+      shortcmd("STAT %d", num)
+    end
+  end
+
   # 3.2.1.  GROUP
   #
   #    GROUP ggg
@@ -527,6 +589,79 @@ module Net::NNTP::Commands
     shortcmd("NEXT")
   end
 
+  # 3.11.1.  QUIT
+  #
+  #    QUIT
+  #
+  #    The server process acknowledges the QUIT command and then closes the
+  #    connection to the client.  This is the preferred method for a client
+  #    to indicate that it has finished all its transactions with the NNTP
+  #    server.
+  #
+  #    If a client simply disconnects (or the connection times out, or some
+  #    other fault occurs), the server should gracefully cease its attempts
+  #    to service the client.
+  #
+  # 3.11.2.  Responses
+  #
+  #    205 closing connection - goodbye!
+  #
+  # @example
+  # ```
+  # nntp.quit
+  # ```
+  #
+  # Response package
+  # ```json
+  # {
+  #   "status": "205",
+  #   "msg": "Goodbye",
+  #   "text": []
+  # }
+  # ```
+  def quit : Net::NNTP::Response
+    shortcmd("QUIT")
+  end
+
+  # 3.12.1.  SLAVE
+  #
+  #    SLAVE
+  #
+  #    Indicates to the server that this client connection is to a slave
+  #    server, rather than a user.
+  #
+  #    This command is intended for use in separating connections to single
+  #    users from those to subsidiary ("slave") servers.  It may be used to
+  #    indicate that priority should therefore be given to requests from
+  #    this client, as it is presumably serving more than one person.  It
+  #    might also be used to determine which connections to close when
+  #    system load levels are exceeded, perhaps giving preference to slave
+  #    servers.  The actual use this command is put to is entirely
+  #    implementation dependent, and may vary from one host to another.  In
+  #    NNTP servers which do not give priority to slave servers, this
+  #    command must nonetheless be recognized and acknowledged.
+  #
+  # 3.12.2.  Responses
+  #
+  #    202 slave status noted
+  #
+  # @example
+  # ```
+  # nntp.quit
+  # ```
+  #
+  # Response package
+  # ```json
+  # {
+  #   "status": "202",
+  #   "msg": "slave status noted",
+  #   "text": []
+  # }
+  # ```
+  def slave : Net::NNTP::Response
+    shortcmd("SLAVE")
+  end
+
   # LIST [ACTIVE|NEWSGROUPS] [<Wildmat>]]:br:
   # LIST [ACTIVE.TIMES|EXTENSIONS|SUBSCRIPTIONS|OVERVIEW.FMT]
   # LISTGROUP <Newsgroup>
@@ -547,11 +682,6 @@ module Net::NNTP::Commands
   # MODE READER
   def mode_reader : Net::NNTP::Response
     shortcmd("MODE READER")
-  end
-
-  # QUIT
-  def quit : Net::NNTP::Response
-    shortcmd("QUIT")
   end
 
   # DATE
