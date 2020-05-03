@@ -30,6 +30,7 @@ module Net::NNTP::Commands
     end
   end
 
+  # [RFC977]
   # 3.1.1.  ARTICLE (selection by message-id)
   #
   #    ARTICLE <message-id>
@@ -99,6 +100,7 @@ module Net::NNTP::Commands
     longcmd("ARTICLE <%s>", message_id)
   end
 
+  # [RFC977]
   # 3.1.2.  ARTICLE (selection by number)
   #
   #  ARTICLE [nnn]
@@ -183,6 +185,7 @@ module Net::NNTP::Commands
     end
   end
 
+  # [RFC977]
   # The HEAD and BODY commands are identical to the ARTICLE command
   # except that they respectively return only the header lines or text
   # body of the article.
@@ -225,6 +228,7 @@ module Net::NNTP::Commands
     end
   end
 
+  # [RFC977]
   # The STAT command is similar to the ARTICLE command except that no
   # text is returned.  When selecting by message number within a group,
   # the STAT command serves to set the current article pointer without
@@ -245,6 +249,7 @@ module Net::NNTP::Commands
     end
   end
 
+  # [RFC977]
   # 3.2.1.  GROUP
   #
   #    GROUP ggg
@@ -290,6 +295,7 @@ module Net::NNTP::Commands
     shortcmd("GROUP %s", name)
   end
 
+  # [RFC977]
   # 3.3.1.  HELP
   #
   #    HELP
@@ -305,6 +311,7 @@ module Net::NNTP::Commands
     longcmd("HELP")
   end
 
+  # [RFC977]
   # 3.5.1.  LAST
   #
   #    LAST
@@ -348,6 +355,7 @@ module Net::NNTP::Commands
     shortcmd("LAST")
   end
 
+  # [RFC977]
   # 3.6.1.  LIST
   #
   #    LIST
@@ -416,6 +424,7 @@ module Net::NNTP::Commands
     longcmd("LIST")
   end
 
+  # [RFC977]
   # 3.7.1.  NEWGROUPS
   #
   #    NEWGROUPS date time [GMT] [<distributions>]
@@ -454,7 +463,9 @@ module Net::NNTP::Commands
   #
   # @example
   # ```
-  # nntp.newgroups
+  # nntp.new_groups
+  # nntp.new_groups("100101", "000000")
+  # nntp.new_groups("100101", "000000", "GMT", ["alt"])
   # ```
   #
   # Response package
@@ -465,10 +476,20 @@ module Net::NNTP::Commands
   #   "text": []
   # }
   # ```
+  def new_groups(date, time, tzone : String = "UTC", distributions : Array(String)? = nil)
+    if distributions.nil?
+      longcmd("NEWGROUPS %s %s %s", date, time, tzone)
+    else
+      longcmd("NEWGROUPS %s %s <%s>", date, time, tzone, distributions.join("> <"))
+    end
+  end
+
+  # :ditto:
   def new_groups
     longcmd("NEWGROUPS")
   end
 
+  # [RFC977]
   # 3.8.1.  NEWNEWS
   #
   #    NEWNEWS newsgroups date time [GMT] [<distribution>]
@@ -546,6 +567,21 @@ module Net::NNTP::Commands
     longcmd("NEWNEWS")
   end
 
+  # :ditto:
+  def new_news(newsgroups : String = "*")
+    longcmd("NEWNEWS %s", newsgroups)
+  end
+
+  # :ditto:
+  def new_news(newsgroups, date, time, tzone : String = "UTC", distributions : Array(String)? = nil)
+    if distributions.nil?
+      longcmd("NEWNEWS %s %s %s %s", newsgroups, date, time, tzone)
+    else
+      longcmd("NEWNEWS %s %s %s <%s>", newsgroups, date, time, tzone, distributions.join("> <"))
+    end
+  end
+
+  # [RFC977]
   # 3.9.1.  NEXT
   #
   #    NEXT
@@ -589,6 +625,7 @@ module Net::NNTP::Commands
     shortcmd("NEXT")
   end
 
+  # [RFC977]
   # 3.11.1.  QUIT
   #
   #    QUIT
@@ -623,6 +660,7 @@ module Net::NNTP::Commands
     shortcmd("QUIT")
   end
 
+  # [RFC977]
   # 3.12.1.  SLAVE
   #
   #    SLAVE
@@ -660,33 +698,5 @@ module Net::NNTP::Commands
   # ```
   def slave : Net::NNTP::Response
     shortcmd("SLAVE")
-  end
-
-  # LIST [ACTIVE|NEWSGROUPS] [<Wildmat>]]:br:
-  # LIST [ACTIVE.TIMES|EXTENSIONS|SUBSCRIPTIONS|OVERVIEW.FMT]
-  # LISTGROUP <Newsgroup>
-  # NEWGROUPS <[yy]yymmdd> <hhmmss> [GMT]
-  # NEWNEWS <yymmdd> <hhmmss> [GMT]
-  # NEXT
-  # OVER <Range>  # e.g first[-[last]]
-  # SLAVE
-  # STAT [<Message-ID>|<Number>]
-  # XHDR <Header> <Message-ID>|<Range>  # e.g first[-[last]]
-  # XOVER <Range>  # e.g first[-[last]]
-
-  # HEAD [<Message-ID>|<Number>]
-  def head(id)
-    longcmd("HEAD #{id}")
-  end
-
-  # MODE READER
-  def mode_reader : Net::NNTP::Response
-    shortcmd("MODE READER")
-  end
-
-  # DATE
-  # 20200502225525 => 2020-05-02-22:55:25
-  def date : Net::NNTP::Response
-    shortcmd("DATE")
   end
 end

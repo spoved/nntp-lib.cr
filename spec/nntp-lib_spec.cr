@@ -96,14 +96,16 @@ describe Net::NNTP do
       resp.status.should eq "222"
       resp.msg.should contain(art_message_id)
 
-      # client selects next article in group
-      resp = client.next
-      next_info = resp.msg.split /\s+/
-      resp.status.should eq "223"
+      if ginfo[0].to_i > 1
+        # client selects next article in group
+        resp = client.next
+        next_info = resp.msg.split /\s+/
+        resp.status.should eq "223"
 
-      # parse article num
-      next_art_num = ginfo[0].to_i
-      next_art_num.should be > art_num
+        # parse article num
+        next_art_num = ginfo[0].to_i
+        next_art_num.should be > art_num
+      end
     end
   end
 end

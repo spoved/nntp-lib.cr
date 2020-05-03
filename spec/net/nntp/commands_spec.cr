@@ -4,6 +4,34 @@ describe Net::NNTP::Commands do
   describe "it can send command" do
     newsgroup = "alt.binaries.cbt"
 
+    # {
+    #   "status": "100",
+    #   "msg": "Legal Commands",
+    #   "text": [
+    #     "  help",
+    #     "  date",
+    #     "  xfeature useragent <client identifier>",
+    #     "  authinfo type value",
+    #     "  mode reader",
+    #     "  post",
+    #     "  list [active wildmat|active.times|counts wildmat]",
+    #     "  list [overview.fmt|newsgroups wildmat]",
+    #     "  listgroup newsgroup",
+    #     "  group newsgroup",
+    #     "  stat [<messageid>|number]",
+    #     "  article [<messageid>|number]",
+    #     "  head [<messageid>|number]",
+    #     "  body [<messageid>|number]",
+    #     "  next",
+    #     "  last",
+    #     "  xhdr field [range]",
+    #     "  xover [range]",
+    #     "  xfeature compress gzip [terminator]",
+    #     "  xzver [range]",
+    #     "  xzhdr field [range]",
+    #     "  quit"
+    #   ]
+    # }
     it "#help" do
       resp = with_client &.help
       resp.status.should eq "100"
@@ -143,8 +171,9 @@ describe Net::NNTP::Commands do
     end
 
     it "#new_groups" do
-      resp = with_client &.new_groups
+      resp = with_client &.new_groups("100101", "000000", "GMT", ["alt"])
       resp.status.should eq "231"
+      # puts resp.to_pretty_json
     end
 
     # TODO: Usenetserver does not support this

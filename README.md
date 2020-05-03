@@ -28,8 +28,24 @@ TODO: Write development instructions here
 
 ## Missing Features
 
-* 3.4.  The IHAVE command
-* 3.10.  The POST command
+* [RFC977](https://www.ietf.org/rfc/rfc977.txt)
+  * 3.4.  The IHAVE command
+  * 3.10.  The POST command
+* [RFC850](https://www.ietf.org/rfc/rfc2980.txt)
+  * 1.3.1  The TAKETHIS command
+  * 1.4.1  The XREPLIC command
+  * 2.1.1 Extensions to the LIST command
+  * 2.2 LISTGROUP
+  * 2.4 XGTITLE
+  * 2.6 XHDR
+  * 2.7 XINDEX
+  * 2.8 XOVER
+  * 2.9 XPAT
+  * 2.10 The XPATH command
+  * 2.11 The XROVER command
+  * 2.12 XTHREAD
+  * 3.3 The WILDMAT format
+
 
 ## Contributing
 
