@@ -65,7 +65,7 @@ describe Net::NNTP do
       resp = client.list
       resp.status.should eq "215"
       resp.text.should_not be_empty
-      newsgroup = resp.text.sample
+      # newsgroup = resp.text.sample
 
       # client selects a newsgroup
       resp = client.group "alt.binaries.ebook"
