@@ -47,7 +47,7 @@ describe Net::NNTP::Commands do
 
     it "#article" do
       with_client do |client|
-        gresp = client.group(newsgroup)
+        client.group(newsgroup)
         num_resp = client.article 56910052
         num_resp.status.should eq "220"
 
@@ -95,7 +95,7 @@ describe Net::NNTP::Commands do
     # }
     it "#head" do
       with_client do |client|
-        gresp = client.group(newsgroup)
+        client.group(newsgroup)
         num_resp = client.head 56910052
         num_resp.status.should eq "221"
         num_resp.msg.should eq "0 <nkdtopWMXkIqWnuDoljqJRJUPKQsWQMk@news.usenet.farm>"
@@ -110,7 +110,7 @@ describe Net::NNTP::Commands do
 
     it "#body" do
       with_client do |client|
-        gresp = client.group(newsgroup)
+        client.group(newsgroup)
         num_resp = client.body 56910052
         num_resp.status.should eq "222"
         num_resp.msg.should eq "56910052 <nkdtopWMXkIqWnuDoljqJRJUPKQsWQMk@news.usenet.farm>"
@@ -140,7 +140,7 @@ describe Net::NNTP::Commands do
     # }
     it "#stat" do
       with_client do |client|
-        gresp = client.group(newsgroup)
+        client.group(newsgroup)
 
         num_resp = client.stat 56910052
         num_resp.status.should eq "223"

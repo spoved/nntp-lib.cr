@@ -99,7 +99,7 @@ describe Net::NNTP do
       if ginfo[0].to_i > 1
         # client selects next article in group
         resp = client.next
-        next_info = resp.msg.split /\s+/
+        # next_info = resp.msg.split /\s+/
         resp.status.should eq "223"
 
         # parse article num

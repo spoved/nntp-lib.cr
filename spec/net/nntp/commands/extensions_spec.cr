@@ -2,8 +2,6 @@ require "../../../spec_helper"
 
 describe Net::NNTP::Commands::Extensions do
   describe "it can send RFC2980 commands" do
-    newsgroup = "alt.binaries.cbt"
-
     # it "#mode_stream" do
     #   resp = with_client &.mode_stream
     #   resp.status.should eq "203"
