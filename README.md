@@ -1,6 +1,10 @@
 # nntp-lib
 
-TODO: Write a description here
+This is a pure Crystal source (single file, fully documented) code, provides
+a minimum requisite functions for NNTP (Network News Transfer Protocol)
+clients, per [RFC977] (http://www.ietf.org/rfc/rfc977.txt), extensions
+[RFC2980] (http://www.ietf.org/rfc/rfc2980.txt) and authentication [DRAFT]
+(http://www.ietf.org/internet-drafts/draft-ietf-nntpext-authinfo-07.txt).
 
 ## Installation
 
@@ -16,15 +20,29 @@ TODO: Write a description here
 
 ## Usage
 
+The NNTP socket can be established via the `start` method which yields itself to the provided block.
+
 ```crystal
 require "nntp-lib"
+
+nntp = Net::NNTP.new("secure.usenetserver.com", 563)
+nntp.start(user: "myuser", secret: "pass", :original) do |socket|
+  # Perform nntp requests here
+end
 ```
 
-TODO: Write usage instructions here
+The socket can also be started without a block, but `finish` should be called to close the nntp session.
 
-## Development
+```crystal
+require "nntp-lib"
 
-TODO: Write development instructions here
+nntp = Net::NNTP.new("secure.usenetserver.com", 563)
+nntp.start(user: "myuser", secret: "pass", :original)
+
+# Perform nntp requests here
+
+nntp.finish
+```
 
 ## Missing Features
 
