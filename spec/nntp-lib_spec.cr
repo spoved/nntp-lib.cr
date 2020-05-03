@@ -68,13 +68,13 @@ describe Net::NNTP do
       newsgroup = resp.text.sample
 
       # client selects a newsgroup
-      resp = client.group newsgroup
+      resp = client.group "alt.binaries.ebook"
       resp.status.should eq "211"
       ginfo = resp.msg.split /\s+/
       ginfo.size.should eq 4
+      # puts ginfo.to_json
 
-      # parse first article num
-      art_num = ginfo[1].to_i
+      art_num = 33665041
 
       # client selects an article to read
       resp = client.stat art_num
