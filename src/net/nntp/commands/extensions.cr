@@ -141,8 +141,12 @@ module Net::NNTP::Commands::Extensions
   #   ]
   # }
   # ```
-  def xdhr(header, message_id : String)
-    longcmd("XHDR %s", header, message_id)
+  def xdhr(header, message_id : String? = nil)
+    if message_id.nil?
+      longcmd("XHDR %s", header)
+    else
+      longcmd("XHDR %s <%s>", header, message_id)
+    end
   end
 
   # [RFC2980](https://www.ietf.org/rfc/rfc2980.txt)
