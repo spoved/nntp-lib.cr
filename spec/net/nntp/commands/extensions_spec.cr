@@ -16,11 +16,6 @@ describe Net::NNTP::Commands::Extensions do
       resp = with_group &.xdhr("subject", 56900000, 56900000 + 10)
       resp.status.should eq "221"
       resp.text.size.should eq 11
-      # puts resp.to_pretty_json
-
-      # resp = with_group &.xdhr("subject", "XrXwSfUuLnTgGkPwFjUhPsDe-1587103045909@nyuu")
-      # resp.status.should eq "221"
-      # resp.text.size.should eq 1
     end
 
     it "#xover" do
