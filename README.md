@@ -1,6 +1,6 @@
 # nntp-lib
 
-[![Build Status](https://travis-ci.com/spoved/nntp-lib.cr.svg?token=Shp7EsY9qyrwFK1NgezB&branch=master)](https://travis-ci.com/spoved/nntp-lib.cr)
+[![Build Status](https://travis-ci.com/spoved/nntp-lib.cr.svg?branch=master)](https://travis-ci.com/spoved/nntp-lib.cr)
 
 This is a pure Crystal source (single file, fully documented) code, provides
 a minimum requisite functions for NNTP (Network News Transfer Protocol)
