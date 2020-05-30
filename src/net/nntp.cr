@@ -178,7 +178,7 @@ class Net::NNTP
     until mode_reader_success
       begin
         resp = mode_reader
-        mode_reader_success = /\A201/ === resp.status
+        mode_reader_success = /\A20(\d)/ === resp.status
       rescue ex : NNTP::Error::AuthenticationError
         raise ex if tried_authenticating
         # Try authenticating now
