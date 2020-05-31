@@ -22,25 +22,23 @@ class Net::NNTP::Response
     true
   end
 
+  private def _check_status
+    case status
+    when /\A440/ then NNTP::Error::PostingNotAllowed # 4xx cmd k, bt nt prfmd
+    when /\A48/  then NNTP::Error::AuthenticationError
+    when /\A4/   then /limit\s+reached/i === msg ? NNTP::Error::TimeLimit : NNTP::Error::ServerBusy
+    when /\A50/  then NNTP::Error::SyntaxError # 5xx cmd ncrrct
+    when /\A55/  then NNTP::Error::FatalError
+    else
+      NNTP::Error::UnknownError
+    end
+  end
+
   def check!(allow_continue = false) : Net::NNTP::Response
     return self if /\A1/ === status                      # 1xx info msg
     return self if /\A2/ === status                      # 2xx cmd k
     return self if allow_continue && /\A[35]/ === status # 3xx cmd k, snd rst
-    exception = case status
-                when /\A440/ then NNTP::Error::PostingNotAllowed # 4xx cmd k, bt nt prfmd
-                when /\A48/  then NNTP::Error::AuthenticationError
-                when /\A4/
-                  if /limit\s+reached/i === msg
-                    NNTP::Error::TimeLimit
-                  else
-                    NNTP::Error::ServerBusy
-                  end
-                when /\A50/ then NNTP::Error::SyntaxError # 5xx cmd ncrrct
-                when /\A55/ then NNTP::Error::FatalError
-                else
-                  NNTP::Error::UnknownError
-                end
-
+    exception = _check_status
     raise exception.new(self.to_s)
   end
 
