@@ -21,5 +21,8 @@ module Net
 
     # Error in NNTP response data.
     class DataError < NNTP::Error; end
+
+    # Time limit reached
+    class TimeLimit < NNTP::Error; end
   end
 end

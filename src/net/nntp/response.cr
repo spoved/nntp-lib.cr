@@ -29,9 +29,14 @@ class Net::NNTP::Response
     exception = case status
                 when /\A440/ then NNTP::Error::PostingNotAllowed # 4xx cmd k, bt nt prfmd
                 when /\A48/  then NNTP::Error::AuthenticationError
-                when /\A4/   then NNTP::Error::ServerBusy
-                when /\A50/  then NNTP::Error::SyntaxError # 5xx cmd ncrrct
-                when /\A55/  then NNTP::Error::FatalError
+                when /\A4/
+                  if /limit\s+reached/i === msg
+                    NNTP::Error::TimeLimit
+                  else
+                    NNTP::Error::ServerBusy
+                  end
+                when /\A50/ then NNTP::Error::SyntaxError # 5xx cmd ncrrct
+                when /\A55/ then NNTP::Error::FatalError
                 else
                   NNTP::Error::UnknownError
                 end
