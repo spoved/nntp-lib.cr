@@ -157,7 +157,7 @@ class Net::NNTP
 
     resp = socket.recv_response
     resp.check!
-    Log.verbose { "do_start.init.response: [#{resp.to_json}]" }
+    Log.debug { "do_start.init.response: [#{resp.to_json}]" }
 
     start_reader_mode(user, secret, method)
 

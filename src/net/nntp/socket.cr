@@ -99,7 +99,7 @@ class Net::NNTP::Socket
 
   def send(fmt, *args, quiet = false)
     cmd = sprintf(fmt, *args)
-    Log.debug { "socket.send: [#{quiet ? fmt : cmd}]" }
+    Log.trace { "socket.send: [#{quiet ? fmt : cmd}]" }
     socket << cmd
     socket << CRLF
     socket.flush
