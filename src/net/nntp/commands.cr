@@ -447,6 +447,11 @@ module Net::NNTP::Commands
     longcmd("LIST")
   end
 
+  # :ditto:
+  def list(args : String)
+    longcmd("LIST %s", args)
+  end
+
   # [RFC977](https://www.ietf.org/rfc/rfc977.txt)
   # `3.7.1 NEWGROUPS`
   #

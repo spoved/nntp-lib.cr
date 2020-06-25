@@ -6,6 +6,7 @@ class Net::NNTP::Socket
   CRLF     = "\x0d\x0a"
   EOT      = ".#{CRLF}"
   DOUBLE_P = ".."
+
   # The address of the NNTP server to connect to.
   getter address : String
 
