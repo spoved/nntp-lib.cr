@@ -71,9 +71,9 @@ class Net::NNTP
   # instead of `new` if you want to do everything at once. Otherwise,
   # follow `new` with `start`.
   def initialize(@address, port : Int32? = nil, @use_ssl = true,
-                 open_timeout : Int32 = 30, read_timeout : Int32 = 60)
+                 open_timeout : Int32 = 30, read_timeout : Int32 = 60, **args)
     @port = port.nil? ? NNTP.default_port : port
-    @socket = Net::NNTP::Socket.new(address, port, use_ssl, open_timeout, read_timeout)
+    @socket = Net::NNTP::Socket.new(address, port, use_ssl, open_timeout, read_timeout, **args)
   end
 
   # Opens a TCP connection and starts the NNTP session.
