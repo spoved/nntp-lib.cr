@@ -1,3 +1,3 @@
 class Net::NNTP
-  VERSION = "0.1.3"
+  VERSION = "1.0.5"
 end
