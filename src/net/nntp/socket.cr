@@ -74,6 +74,9 @@ class Net::NNTP::Socket
     stat = self.gets(chomp: true)
     raise NNTP::Error::UnknownError.new("Got nil response") if stat.nil?
     Net::NNTP::Response.new(stat[0..2], stat[4..-1])
+  rescue ex : IO::Error
+    self.close
+    raise ex
   end
 
   getter response_text_buffer : Array(String) = Array(String).new(1)
@@ -96,6 +99,9 @@ class Net::NNTP::Socket
     end
     resp.text.concat response_text_buffer
     response_text_buffer.clear
+  rescue ex : IO::Error
+    self.close
+    raise ex
   end
 
   def send(fmt, *args, quiet = false)
