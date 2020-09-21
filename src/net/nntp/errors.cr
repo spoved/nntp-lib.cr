@@ -24,5 +24,7 @@ module Net
 
     # Time limit reached
     class TimeLimit < NNTP::Error; end
+
+    class ConnectionLost < NNTP::Error; end
   end
 end

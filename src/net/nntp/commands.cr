@@ -21,12 +21,13 @@ module Net::NNTP::Commands
   end
 
   protected def critical(&block)
-    return Net::NNTP::Response.new("200", "dummy reply code") if error_occured
     begin
       yield
+    rescue ex : IO::Error | OpenSSL::SSL::Error
+      Log.trace { "[#{Fiber.current.name}][critical] #{ex.message}" }
+      raise Net::NNTP::Error::ConnectionLost.new(ex.message)
     rescue ex
-      Log.error(exception: ex) { "[#{Fiber.current.name}] #{ex.message}" }
-      @error_occured = true
+      Log.error(exception: ex) { "[#{Fiber.current.name}][critical] #{ex.message}" }
       raise ex
     end
   end
