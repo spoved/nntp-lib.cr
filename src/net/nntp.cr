@@ -185,7 +185,7 @@ class Net::NNTP
         authenticate(user, secret, method)
         tried_authenticating = true
       rescue ex
-        Log.error(exception: ex) { "start_reader_mode: [Failed to authenticate]" }
+        Log.error(exception: ex) { "[#{Fiber.current.name}] start_reader_mode: [Failed to authenticate]" }
         raise ex
       end
     end
