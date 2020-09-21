@@ -25,6 +25,7 @@ module Net::NNTP::Commands
     begin
       yield
     rescue ex
+      Log.error(exception: ex) { "[#{Fiber.current.name}] #{ex.message}" }
       @error_occured = true
       raise ex
     end

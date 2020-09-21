@@ -36,7 +36,7 @@ class Net::NNTP::Socket
   end
 
   def open
-    Log.info { "socket.open: [address: #{address}, port: #{port} use_ssl: #{use_ssl}]" }
+    Log.info { "[#{Fiber.current.name}] socket.open: [address: #{address}, port: #{port} use_ssl: #{use_ssl}]" }
 
     sock = TCPSocket.new(address, port, connect_timeout: open_timeout)
     sock.read_timeout = read_timeout
@@ -52,10 +52,10 @@ class Net::NNTP::Socket
 
   def socket : TCPSocket | OpenSSL::SSL::Socket::Client
     if (use_ssl)
-      raise "NNTP Socket is not open!" if @ssl_socket.nil?
+      raise "[#{Fiber.current.name}] NNTP Socket is not open!" if @ssl_socket.nil?
       @ssl_socket.as(OpenSSL::SSL::Socket::Client)
     else
-      raise "NNTP Socket is not open!" if @tcp_socket.nil?
+      raise "[#{Fiber.current.name}] NNTP Socket is not open!" if @tcp_socket.nil?
       @tcp_socket.as(TCPSocket)
     end
   end
@@ -65,6 +65,7 @@ class Net::NNTP::Socket
   end
 
   def close
+    Log.trace { "[#{Fiber.current.name}] closing NNTP Socket" }
     ssl_socket.not_nil!.close unless ssl_socket.nil?
     tcp_socket.not_nil!.close unless tcp_socket.nil?
     self.closed = true
@@ -72,7 +73,7 @@ class Net::NNTP::Socket
 
   def recv_response : Net::NNTP::Response
     stat = self.gets(chomp: true)
-    raise NNTP::Error::UnknownError.new("Got nil response") if stat.nil?
+    raise NNTP::Error::UnknownError.new("[#{Fiber.current.name}] Got nil response") if stat.nil?
     Net::NNTP::Response.new(stat[0..2], stat[4..-1])
   rescue ex : IO::Error
     self.close
@@ -106,7 +107,7 @@ class Net::NNTP::Socket
 
   def send(fmt, *args, quiet = false)
     cmd = sprintf(fmt, *args)
-    Log.trace { "socket.send: [#{quiet ? fmt : cmd}]" }
+    Log.trace { "[#{Fiber.current.name}] socket.send: [#{quiet ? fmt : cmd}]" }
     socket << cmd
     socket << CRLF
     socket.flush

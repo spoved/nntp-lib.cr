@@ -15,21 +15,21 @@ module Net::NNTP::Commands::Auth
     ]
 
     def authenticate(user, secret, method = :original)
-        Log.info { "auth.start: [user: #{user}, method: #{method}]" }
+        Log.info { "[#{Fiber.current.name}] auth.start: [user: #{user}, method: #{method}]" }
         case method
         {% for m in auth_methods %}
         when :{{m.id}}
           auth_{{m.id}}(user, secret)
         {% end %}
         else
-          Log.error { "Unsupported auth method: #{method}" }
-          raise NNTP::Error::AuthenticationError.new "Unsupported auth method: #{method}"
+          Log.error { "[#{Fiber.current.name}] Unsupported auth method: #{method}" }
+          raise NNTP::Error::AuthenticationError.new "[#{Fiber.current.name}] Unsupported auth method: #{method}"
         end
     end
 
     {% for m in auth_methods %}
       private def auth_{{m.id}}(user, secret)
-        raise NotImplementedError.new(%<Auth for method "{{m.id}}" has not been implimented>)
+        raise NotImplementedError.new(%<[#{Fiber.current.name}] Auth for method "{{m.id}}" has not been implimented>)
       end
     {% end %}
   {% end %}
