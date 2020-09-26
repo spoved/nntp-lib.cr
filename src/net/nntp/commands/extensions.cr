@@ -289,6 +289,42 @@ module Net::NNTP::Commands::Extensions
   end
 
   # [RFC2980](https://www.ietf.org/rfc/rfc2980.txt)
+  # `2.1.7 LIST OVERVIEW.FMT`
+  #
+  # ### 2.1.7 LIST OVERVIEW.FMT
+  # ```text
+  #    LIST OVERVIEW.FMT
+  # ```
+  #
+  #   The overview.fmt file is maintained by some news transport systems to
+  #   contain the order in which header information is stored in the
+  #   overview databases for each news group.  When executed, news article
+  #   header fields are displayed one line at a time in the order in which
+  #   they are stored in the overview database [5] following the 215
+  #   response.  When display is completed, the server will send a period
+  #   on a line by itself.  If the information is not available, the server
+  #   will return the 503 response.
+  #
+  #   Please note that if the header has the word "full" (without quotes)
+  #   after the colon, the header's name is prepended to its field in the
+  #   output returned by the server.
+  #
+  #   Many newsreaders work better if Xref: is one of the optional fields.
+  #
+  #   It is STRONGLY recommended that this command be implemented in any
+  #   server that implements the XOVER command.  See section 2.8 for more
+  #   details about the XOVER command.
+  #
+  # ### 2.1.7.1 Responses
+  # ```text
+  #      215 information follows
+  #      503 program error, function not performed
+  # ```
+  def list_overview_fmt
+    longcmd("LIST OVERVIEW.FMT")
+  end
+
+  # [RFC2980](https://www.ietf.org/rfc/rfc2980.txt)
   # `3.2 DATE`
   #
   # ### 3.2 DATE
