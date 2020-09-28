@@ -166,10 +166,11 @@ class Net::NNTP
 
   private def _do_finish
     quit unless self.socket.closed?
+    self.socket.try &.close unless self.socket.closed?
+  rescue ex : Net::NNTP::Error | Net::NNTP::Error::UnknownError | Net::NNTP::Error::ConnectionLost
   ensure
     self.started = false
     self.error_occured = false
-    self.socket.close unless self.socket.closed?
   end
 
   private def start_reader_mode(user, secret, method)

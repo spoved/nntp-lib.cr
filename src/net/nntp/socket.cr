@@ -66,8 +66,12 @@ class Net::NNTP::Socket
 
   def close
     Log.trace { "[#{Fiber.current.name}] closing NNTP Socket" }
-    ssl_socket.not_nil!.close unless ssl_socket.nil?
-    tcp_socket.not_nil!.close unless tcp_socket.nil?
+    ssl_socket.not_nil!.try &.close unless ssl_socket.nil?
+    tcp_socket.not_nil!.try &.close unless tcp_socket.nil?
+  rescue ex : OpenSSL::SSL::Error
+  ensure
+    self.ssl_socket = nil
+    self.tcp_socket = nil
     self.closed = true
   end
 
