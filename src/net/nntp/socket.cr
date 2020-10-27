@@ -79,7 +79,7 @@ class Net::NNTP::Socket
     stat = self.gets(chomp: true)
     raise NNTP::Error::UnknownError.new("[#{Fiber.current.name}] Got nil response") if stat.nil?
     Net::NNTP::Response.new(stat[0..2], stat[4..-1])
-  rescue ex : IO::Error
+  rescue ex : IO::Error | NNTP::Error::UnknownError
     self.close
     raise ex
   end
