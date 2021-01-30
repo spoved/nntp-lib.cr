@@ -4,7 +4,7 @@ version: 1.0.10
 authors:
   - Holden Omans <holden.omans@gmail.com>
 
-crystal: 0.35.1
+crystal: 0.36.0
 
 license: MIT
 
@@ -15,4 +15,4 @@ development_dependencies:
     github: gdotdesign/cr-dotenv
   ameba:
     github: veelenga/ameba
-    version: ~> 0.10.0
+    version: ~> 0.13.0

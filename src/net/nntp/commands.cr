@@ -10,7 +10,7 @@ module Net::NNTP::Commands
     resp.check!
   end
 
-  protected def longcmd(fmt, *args)
+  protected def longcmd(fmt, *args) : Net::NNTP::Response
     Log.debug { "[#{Fiber.current.name}] cmds.longcmd.fmt: [#{fmt}] args: [#{args}]" }
     resp = critical { socket.send(fmt, *args) }
     Log.debug { "[#{Fiber.current.name}] cmds.longcmd.response: [#{resp}]" }
