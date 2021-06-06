@@ -1,6 +1,13 @@
 # nntp-lib
 
-[![Build Status](https://travis-ci.com/spoved/nntp-lib.cr.svg?branch=master)](https://travis-ci.com/spoved/nntp-lib.cr)
+<p align="center">
+    <a href="https://github.com/spoved/nntp-lib.cr/actions/workflows/build.yml">
+        <img src="https://github.com/spoved/nntp-lib.cr/actions/workflows/build.yml/badge.svg" alt="Build Status"></a>
+    <a href="https://github.com/spoved/nntp-lib.cr/actions/workflows/release.yml">
+        <img src="https://github.com/spoved/nntp-lib.cr/actions/workflows/release.yml/badge.svg" alt="Release Status"></a>
+    <a href="https://github.com/spoved/nntp-lib.cr/releases">
+        <img src="https://img.shields.io/github/v/release/spoved/nntp-lib.cr" alt="Latest release"></a>
+</p>
 
 This is a pure Crystal source (single file, fully documented) code, provides
 a minimum requisite functions for NNTP (Network News Transfer Protocol)
@@ -47,25 +54,25 @@ nntp.finish
 
 ## Missing Features
 
-* [RFC977](https://www.ietf.org/rfc/rfc977.txt)
-  * 3.4.  The IHAVE command
-  * 3.10.  The POST command
-* [RFC2980](https://www.ietf.org/rfc/rfc2980.txt)
-  * 1.3.1  The TAKETHIS command
-  * 1.4.1  The XREPLIC command
-  * 2.1.1 Extensions to the LIST command
-  * 2.2 LISTGROUP
-  * 2.4 XGTITLE
-  * 2.7 XINDEX
-  * 2.9 XPAT
-  * 2.10 The XPATH command
-  * 2.11 The XROVER command
-  * 2.12 XTHREAD
-  * 3.3 The WILDMAT format
-* Misc commands
-  * xfeature compress gzip [terminator]
-  * xzver [range]
-  * xzhdr field [range]
+- [RFC977](https://www.ietf.org/rfc/rfc977.txt)
+  - 3.4. The IHAVE command
+  - 3.10. The POST command
+- [RFC2980](https://www.ietf.org/rfc/rfc2980.txt)
+  - 1.3.1 The TAKETHIS command
+  - 1.4.1 The XREPLIC command
+  - 2.1.1 Extensions to the LIST command
+  - 2.2 LISTGROUP
+  - 2.4 XGTITLE
+  - 2.7 XINDEX
+  - 2.9 XPAT
+  - 2.10 The XPATH command
+  - 2.11 The XROVER command
+  - 2.12 XTHREAD
+  - 3.3 The WILDMAT format
+- Misc commands
+  - xfeature compress gzip [terminator]
+  - xzver [range]
+  - xzhdr field [range]
 
 ## Contributing
 
