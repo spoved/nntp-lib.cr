@@ -1,12 +1,14 @@
 name: build
+concurrency:
+  group: ${{ github.head_ref }}
 on: [push, pull_request]
 jobs:
   spec:
     strategy:
       fail-fast: false
       matrix:
-        os: [ubuntu-latest, macos-latest]
-        crystal: [1.0.0, latest, nightly]
+        os: [ubuntu-latest]
+        crystal: [latest]
     runs-on: ${{ matrix.os }}
     steps:
       - name: Checkout
