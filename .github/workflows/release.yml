@@ -1,6 +1,6 @@
 name: release
 concurrency:
-  group: ${{ github.head_ref }}
+  group: build
 on: [release]
 jobs:
   spec:

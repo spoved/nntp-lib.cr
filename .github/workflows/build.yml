@@ -1,6 +1,6 @@
 name: build
 concurrency:
-  group: ${{ github.head_ref }}
+  group: build
 on: [push, pull_request]
 jobs:
   spec:
